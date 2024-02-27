@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Regressiontester</title>
+  </head>
+  <body>
+    <main>
+      <aside id="controls">
+        <button id="next">Next</button>
+        <p id="url"></p>
+        <select id="environment">
+          <option value="acc">Acceptance</option>
+          <option value="prev">Preview</option>
+          <option value="production">Production</option>
+        </select>
+        <select id="uscContext">
+          <option value="used">Used</option>
+          <option value="stock">Stock</option>
+        </select>
+        <select id="component">
+          <option value="car-filter">Car Filter</option>
+          <option value="used-stock-cars">PDP</option>
+          <option value="used-stock-cars-v2">PDP v2</option>
+        </select>
+        <select id="uscEnv">
+          <option value="uat">UAT</option>
+          <option value="production">PROD</option>
+        </select>
+        <select id="brand">
+          <option value="toyota">Toyota</option>
+          <option value="lexus">Lexus</option>
+        </select>
+      </aside>
+      <iframe id="iframe" src="" frameborder="0"></iframe>
+    </main>
+    <script>
+      const countryLanguageCodes = [
+        'fr/fr',
+        'es/es',
+        'se/sv',
+        'dk/da',
+        'fi/fi',
+        'be/nl',
+        'be/fr',
+        'gr/el',
+        'it/it',
+        'ro/ro',
+        'bg/bg',
+        'tr/tr',
+        'de/de',
+        'si/sl',
+        'rs/sr',
+        'hr/hr',
+        'ba/hr',
+        'ee/et',
+        'lv/lv',
+        'lt/lt',
+        'az/az',
+        'ge/ka',
+        'is/is',
+        'cy/en',
+      ];
+      const url = document.getElementById('url');
+      const nextButton = document.getElementById('next');
+      const iframe = document.getElementById('iframe');
+      const environment = document.getElementById('environment');
+      const component = document.getElementById('component');
+      const uscContext = document.getElementById('uscContext');
+      const uscEnv = document.getElementById('uscEnv');
+      const brand = document.getElementById('brand');
+
+      let currentCountryIndex = 0;
+      let generatedUrls = [];
+
+      const attachChangeListener = (element, callback) => {
+        element.addEventListener('change', callback);
+      };
+
+      const commonCallback = () => {
+        setNextUrl();
+        url.innerHTML = generateUrl();
+      };
+
+      const generateUrl = () => {
+        const selectedEnvironment = environment.value;
+        const selectedComponent = component.value;
+        const selectedUscContext = uscContext.value;
+        const selectedUscEnv = uscEnv.value;
+        const selectedBrand = brand.value;
+
+        const environmentString =
+          selectedEnvironment === 'production' ? '' : `${selectedEnvironment}`;
+
+        let url = `https://usc-webcomponents${environmentString}.toyota-europe.com/${countryLanguageCodes[currentCountryIndex]}`;
+
+        switch (selectedComponent) {
+          case 'car-filter':
+            url += `/car-filter?carFilter=${selectedUscContext}&uscEnv=${selectedUscEnv}&brand=${selectedBrand}`;
+            break;
+
+          case 'used-stock-cars':
+            url += `/used-stock-cars?uscContext=${selectedUscContext}&authorPreview=true&uscEnv=${selectedUscEnv}&brand=${selectedBrand}`;
+            break;
+
+          case 'used-stock-cars-v2':
+            url += `/used-stock-cars-v2?uscContext=${selectedUscContext}&authorPreview=true&uscEnv=${selectedUscEnv}&brand=${selectedBrand}`;
+            break;
+        }
+
+        return url;
+      };
+
+      const firstUrl = generateUrl();
+
+      url.innerHTML = firstUrl;
+      iframe.src = firstUrl;
+
+      /**
+       * Set the next URL in the iframe
+       */
+      const setNextUrl = () => {
+        const url = generateUrl();
+        iframe.src = url;
+        generatedUrls.push(url);
+      };
+
+      nextButton.addEventListener('click', () => {
+        currentCountryIndex++;
+        if (currentCountryIndex >= countryLanguageCodes.length) {
+          alert('All countries have been opened');
+          return;
+        }
+        setNextUrl();
+        url.innerHTML = generateUrl();
+      });
+
+      attachChangeListener(environment, commonCallback);
+      attachChangeListener(component, commonCallback);
+      attachChangeListener(uscContext, commonCallback);
+      attachChangeListener(uscEnv, commonCallback);
+      attachChangeListener(brand, commonCallback);
+    </script>
+  </body>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    main {
+      position: relative;
+      height: 100vh;
+      width: 100vw;
+    }
+    #controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      background-color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</html>
