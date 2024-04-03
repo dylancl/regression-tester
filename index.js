@@ -64,6 +64,7 @@ const countryLanguageCodes = {
   'de/de': {
     pretty: 'Germany',
     hasLexus: true,
+    hasStock: true,
     nmsc: 'TDG',
   },
   'si/sl': {
