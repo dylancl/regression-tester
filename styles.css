@@ -121,3 +121,22 @@ main {
     transform: rotate(360deg);
   }
 }
+
+.hamburger {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 1rem;
+  z-index: 100;
+}
+
+#controls {
+  display: none;
+  transition: transform 0.3s ease-out;
+  transform: translateX(-100%);
+}
+
+#controls.active {
+  display: block;
+  transform: translateX(0);
+}

@@ -124,6 +124,8 @@ const [
   iframeLoadingSpinner,
   countryLanguageCode,
   notification,
+  hamburger,
+  sidebar,
 ] = [
   'url',
   'next',
@@ -132,6 +134,8 @@ const [
   'loading-indicator',
   'countryLanguageCode',
   'notification',
+  'hamburger',
+  'controls',
 ].map((id) => document.getElementById(id));
 
 let currentCountryIndex = 0;
@@ -395,6 +399,9 @@ iframe.addEventListener('load', () => {
   iframeLoadingSpinner.style.display = 'none'; // Hide the indicator
   iframe.style.display = 'block'; // Show the iframe
   setDisabledOptions();
+});
+attachEventListener(hamburger, 'click', () => {
+  sidebar.classList.toggle('active');
 });
 
 /**

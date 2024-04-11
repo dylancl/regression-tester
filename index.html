@@ -1,89 +1,85 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Regressiontester</title>
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://cdn.jsdelivr.net/npm/minstyle.io@2.0.2/dist/css/minstyle.io.min.css"
-    />
-    <script
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/npm/dark-mode-switcher@0.0.1/dist/dark.min.js"
-    ></script>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <main>
-      <aside id="controls" class="ms-border">
-        <div
-          class="ms-display-flex ms-justify-content-space-between ms-fullwidth"
-        >
-          <button class="ms-fullwidth" id="prev">Previous</button>
-          <button class="ms-fullwidth" id="next">Next</button>
-        </div>
-        <select id="countryLanguageCode">
-        </select>
-        <div>
-          <p id="url"></p>
-          <p id="copy-label">Click to copy</p>
-        </div>
-        <div class="ms-form-group w-100">
-          <label for="environment">OR environment</label>
-          <select id="environment">
-            <option value="acc">Acceptance</option>
-            <option value="prev">Preview</option>
-            <option value="production">Production</option>
-          </select>
-        </div>
-        <div class="ms-form-group w-100">
-          <label for="uscContext">USC context</label>
-          <select id="uscContext">
-            <option value="used">Used</option>
-            <option value="stock">Stock</option>
-          </select>
-        </div>
-        <div class="ms-form-group w-100">
-          <label for="component">Component</label>
-          <select id="component">
-            <option value="car-filter">Car Filter</option>
-            <option value="used-stock-cars">PDP</option>
-            <option value="used-stock-cars-v2">PDP v2</option>
-          </select>
-        </div>
-        <div class="ms-form-group w-100">
-          <label for="uscEnv">USC environment (DF)</label>
-          <select id="uscEnv">
-            <option value="uat">UAT</option>
-            <option value="production">PROD</option>
-          </select>
-        </div>
-        <div class="ms-form-group w-100">
-          <label for="brand">Brand</label>
-          <select id="brand">
-            <option value="toyota">Toyota</option>
-            <option value="lexus">Lexus</option>
-          </select>
-        </div>
-      </aside>
-      <div class="iframe-container">
-        <iframe id="iframe" src="" frameborder="0"></iframe>
-        <div id="loading-indicator">
-          <div class="lds-ring">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-          <p>Loading...</p>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regressiontester</title>
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.jsdelivr.net/npm/minstyle.io@2.0.2/dist/css/minstyle.io.min.css" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/dark-mode-switcher@0.0.1/dist/dark.min.js"></script>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <main>
+    <button class="hamburger" id="hamburger">&#9776;</button>
+    <aside id="controls" class="ms-border active">
+      <div class="ms-display-flex ms-justify-content-space-between ms-fullwidth">
+        <button class="ms-fullwidth" id="prev">Previous</button>
+        <button class="ms-fullwidth" id="next">Next</button>
       </div>
-    </main>
+      <select id="countryLanguageCode">
+      </select>
+      <div>
+        <p id="url"></p>
+        <p id="copy-label">Click to copy</p>
+      </div>
+      <div class="ms-form-group w-100">
+        <label for="environment">OR environment</label>
+        <select id="environment">
+          <option value="acc">Acceptance</option>
+          <option value="prev">Preview</option>
+          <option value="production">Production</option>
+        </select>
+      </div>
+      <div class="ms-form-group w-100">
+        <label for="uscContext">USC context</label>
+        <select id="uscContext">
+          <option value="used">Used</option>
+          <option value="stock">Stock</option>
+        </select>
+      </div>
+      <div class="ms-form-group w-100">
+        <label for="component">Component</label>
+        <select id="component">
+          <option value="car-filter">Car Filter</option>
+          <option value="used-stock-cars">PDP</option>
+          <option value="used-stock-cars-v2">PDP v2</option>
+        </select>
+      </div>
+      <div class="ms-form-group w-100">
+        <label for="uscEnv">USC environment (DF)</label>
+        <select id="uscEnv">
+          <option value="uat">UAT</option>
+          <option value="production">PROD</option>
+        </select>
+      </div>
+      <div class="ms-form-group w-100">
+        <label for="brand">Brand</label>
+        <select id="brand">
+          <option value="toyota">Toyota</option>
+          <option value="lexus">Lexus</option>
+        </select>
+      </div>
+    </aside>
+    <div class="iframe-container">
+      <iframe id="iframe" src="" frameborder="0"></iframe>
+      <div id="loading-indicator">
+        <div class="lds-ring">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <p>Loading...</p>
+      </div>
+  </main>
 
-    <div id="notification" class="notification"></div>
+  <div id="notification" class="notification"></div>
 
-    <script src="./index.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" type="text/javascript"></script>
-  </body>
+  <script src="./index.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js" type="text/javascript"></script>
+</body>
+
 </html>
