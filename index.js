@@ -294,12 +294,25 @@ const generateUrl = () => {
 
   checkOptions();
 
-  const environmentString =
-    selectedEnvironment === 'production' ? '' : `${selectedEnvironment}`;
+  let environmentString;
+  let url;
   const selectedCountryLanguageCode =
     Object.keys(countryLanguageCodes)[currentCountryIndex];
 
-  let url = `https://usc-webcomponents${environmentString}.toyota-europe.com/${selectedCountryLanguageCode}`;
+  switch (selectedEnvironment) {
+    case 'localhost':
+      url = `http://localhost:5001/${selectedCountryLanguageCode}`;
+      break;
+    case 'dev':
+    case 'acc':
+    case 'prev':
+      environmentString = `${selectedEnvironment}`;
+      url = `https://usc-webcomponents${environmentString}.toyota-europe.com/${selectedCountryLanguageCode}`;
+      break;
+    case 'prod':
+      url = `https://usc-webcomponents.toyota-europe.com/${selectedCountryLanguageCode}`;
+      break;
+  }
 
   switch (selectedComponent) {
     case 'car-filter':
