@@ -214,6 +214,7 @@ const getSelectedOptions = () => {
     'uscContext',
     'uscEnv',
     'brand',
+    'variantBrand',
   ];
 
   checkOptions();
@@ -397,6 +398,7 @@ attachChangeListener(component, commonCallback);
 attachChangeListener(uscContext, commonCallback);
 attachChangeListener(uscEnv, commonCallback);
 attachChangeListener(brand, commonCallback);
+attachChangeListener(variantBrand, commonCallback);
 attachChangeListener(countryLanguageCode, setCountryLanguageCode);
 
 attachEventListener(nextButton, 'click', setNextUrl);
