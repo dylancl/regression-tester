@@ -322,8 +322,18 @@ const generateUrl = () => {
     case 'used-stock-cars':
       url += `/used-stock-cars?authorPreview=true&${buildQueryString(rest)}`;
       break;
+    case 'used-stock-cars-pdf':
+      url += `/used-stock-cars-pdf?authorPreview=true&${buildQueryString(
+        rest
+      )}`;
+      break;
     case 'used-stock-cars-v2':
       url += `/used-stock-cars-v2?authorPreview=true&${buildQueryString(rest)}`;
+      break;
+    case 'used-stock-cars-v2-pdf':
+      url += `/used-stock-cars-v2-pdf?authorPreview=true&${buildQueryString(
+        rest
+      )}`;
       break;
   }
 
