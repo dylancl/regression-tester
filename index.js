@@ -201,6 +201,7 @@ const commonCallback = () => {
     Object.keys(countryLanguageCodes)[currentCountryIndex];
   url.textContent = generatedUrl;
   iframe.src = generatedUrl;
+  updateUrl();
 };
 
 /**
@@ -407,16 +408,61 @@ const showNotification = (text) => {
   }, 3000);
 };
 
+const getUrlParams = () => {
+  const params = new URLSearchParams(window.location.search);
+  const selectedOptions = {};
+  params.forEach((value, key) => {
+    selectedOptions[key] = value;
+  });
+  return selectedOptions;
+};
+
+const updateUrl = () => {
+  const selectedOptions = getSelectedOptions();
+  const queryString = buildQueryString(selectedOptions);
+  const newUrl = `${window.location.origin}${window.location.pathname}?${queryString}`;
+  window.history.pushState({}, '', newUrl); // pushState instead of replaceState to keep the history
+};
+
+const applyUrlParams = () => {
+  const params = getUrlParams();
+  Object.keys(params).forEach((key) => {
+    const element = document.getElementById(key);
+    if (element) {
+      element.value = params[key];
+    }
+  });
+  commonCallback();
+};
+
 attachChangeListener(environment, commonCallback);
 attachChangeListener(component, commonCallback);
 attachChangeListener(uscContext, commonCallback);
 attachChangeListener(uscEnv, commonCallback);
 attachChangeListener(brand, commonCallback);
 attachChangeListener(variantBrand, commonCallback);
-attachChangeListener(countryLanguageCode, setCountryLanguageCode);
+attachChangeListener(countryLanguageCode, () => {
+  updateUrl();
+  setCountryLanguageCode();
+});
+attachEventListener(window, 'load', () => {
+  applyUrlParams();
+  populateDropdown();
+  const firstUrl = generateUrl();
+  countryLanguageCode.value =
+    Object.keys(countryLanguageCodes)[currentCountryIndex];
+  url.textContent = firstUrl;
+  iframe.src = firstUrl;
+});
 
-attachEventListener(nextButton, 'click', setNextUrl);
-attachEventListener(previousButton, 'click', setPreviousUrl);
+attachEventListener(nextButton, 'click', () => {
+  updateUrl();
+  setNextUrl();
+});
+attachEventListener(previousButton, 'click', () => {
+  updateUrl();
+  setPreviousUrl();
+});
 attachEventListener(url, 'click', () => {
   const text = url.textContent;
   navigator.clipboard
@@ -432,13 +478,3 @@ iframe.addEventListener('load', () => {
 attachEventListener(hamburger, 'click', () => {
   sidebar.classList.toggle('active');
 });
-
-/**
- * Set the initial URL on page load
- */
-populateDropdown();
-const firstUrl = generateUrl();
-countryLanguageCode.value =
-  Object.keys(countryLanguageCodes)[currentCountryIndex];
-url.textContent = firstUrl;
-iframe.src = firstUrl;
