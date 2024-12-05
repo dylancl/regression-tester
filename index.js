@@ -199,7 +199,7 @@ const commonCallback = () => {
   const generatedUrl = generateUrl();
   countryLanguageCode.value =
     Object.keys(countryLanguageCodes)[currentCountryIndex];
-  url.innerHTML = generatedUrl;
+  url.textContent = generatedUrl;
   iframe.src = generatedUrl;
 };
 
@@ -317,6 +317,10 @@ const generateUrl = () => {
 
   switch (selectedComponent) {
     case 'car-filter':
+      // The car-filter component uses the uscContext as the carFilter
+      rest.carFilter = rest.uscContext;
+      delete rest.uscContext;
+
       url += `/car-filter?${buildQueryString(rest)}`;
       break;
     case 'used-stock-cars':
@@ -346,7 +350,7 @@ const generateUrl = () => {
  * @returns {void}
  */
 const setUrl = (urlToSet) => {
-  url.innerHTML = urlToSet;
+  url.textContent = urlToSet;
   iframe.src = urlToSet;
   countryLanguageCode.value =
     Object.keys(countryLanguageCodes)[currentCountryIndex];
@@ -396,7 +400,7 @@ const setCountryLanguageCode = () => {
  * @returns {void}
  */
 const showNotification = (text) => {
-  notification.innerHTML = text;
+  notification.textContent = text;
   notification.style.display = 'block';
   setTimeout(() => {
     notification.style.display = 'none';
@@ -436,5 +440,5 @@ populateDropdown();
 const firstUrl = generateUrl();
 countryLanguageCode.value =
   Object.keys(countryLanguageCodes)[currentCountryIndex];
-url.innerHTML = firstUrl;
+url.textContent = firstUrl;
 iframe.src = firstUrl;
