@@ -449,6 +449,19 @@ const CountriesOverview: React.FC = () => {
                                     }} 
                                   />
                                 )}
+                                {country.hasUsed === false && (
+                                  <Chip 
+                                    icon={<Check fontSize="small" />} 
+                                    label="No Used Cars" 
+                                    size="small" 
+                                    sx={{ 
+                                      bgcolor: theme.palette.warning.light,
+                                      color: theme.palette.warning.dark,
+                                      fontWeight: 500,
+                                      fontSize: '0.7rem',
+                                    }} 
+                                  />
+                                )}
                               </Stack>
                               
                               <Button
@@ -549,6 +562,18 @@ const CountriesOverview: React.FC = () => {
                                     height: 20,
                                     bgcolor: theme.palette.success.light,
                                     color: theme.palette.success.dark,
+                                    fontSize: '0.65rem',
+                                  }} 
+                                />
+                              )}
+                              {country.hasUsed === false && (
+                                <Chip 
+                                  label="No Used Cars" 
+                                  size="small" 
+                                  sx={{ 
+                                    height: 20,
+                                    bgcolor: theme.palette.warning.light,
+                                    color: theme.palette.warning.dark,
                                     fontSize: '0.65rem',
                                   }} 
                                 />

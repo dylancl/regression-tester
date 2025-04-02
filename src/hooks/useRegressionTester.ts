@@ -28,6 +28,38 @@ export const useRegressionTester = () => {
   // Get current country code
   const countryLanguageCode = Object.keys(countryLanguageCodes)[currentCountryIndex];
 
+  // Validate options against the current country's availability
+  const validateOptionsForCountry = (options: SelectedOptions, countryCode: string): SelectedOptions => {
+    const newOptions = { ...options };
+    const hasLexus = countryLanguageCodes[countryCode]?.hasLexus;
+    const hasStock = countryLanguageCodes[countryCode]?.hasStock;
+    const hasUsed = !!countryLanguageCodes[countryCode]?.hasUsed;
+    
+    if (newOptions.brand === 'lexus' && !hasLexus) {
+      showNotification(`Lexus is not available for ${countryLanguageCodes[countryCode]?.pretty}, switching to Toyota`);
+      newOptions.brand = 'toyota';
+    }
+    
+    // Validate USC context selection
+    if (newOptions.uscContext === 'stock' && !hasStock) {
+      if (hasUsed) {
+        showNotification(`Stock Cars is not available for ${countryLanguageCodes[countryCode]?.pretty}, switching to Used Cars`);
+        newOptions.uscContext = 'used';
+      } else {
+        showNotification(`Stock Cars is not available for ${countryLanguageCodes[countryCode]?.pretty}`);
+      }
+    } else if (newOptions.uscContext === 'used' && !hasUsed) {
+      if (hasStock) {
+        showNotification(`Used Cars is not available for ${countryLanguageCodes[countryCode]?.pretty}, switching to Stock Cars`);
+        newOptions.uscContext = 'stock';
+      } else {
+        showNotification(`Used Cars is not available for ${countryLanguageCodes[countryCode]?.pretty}`);
+      }
+    }
+    
+    return newOptions;
+  };
+
   // Initialize from URL params and generate initial URL
   useEffect(() => {
     const urlParams = parseUrlParams();
@@ -87,23 +119,12 @@ export const useRegressionTester = () => {
   const handleOptionChange = (name: string, value: string) => {
     // Make a copy of the current options
     const newOptions = { ...selectedOptions, [name]: value };
-
-    const hasLexus = countryLanguageCodes[countryLanguageCode]?.hasLexus;
-    const hasStock = countryLanguageCodes[countryLanguageCode]?.hasStock;
-
-    if (name === 'brand' && value === 'lexus' && !hasLexus) {
-      showNotification('Lexus is not available for this country');
-      newOptions.brand = 'toyota';
-    }
-
-    if (name === 'uscContext' && value === 'stock' && !hasStock) {
-      showNotification('Stock Cars is not set up for this country');
-      newOptions.uscContext = 'used';
-    }
-
-    setIframeLoading(true);    
-    setSelectedOptions(newOptions);
-    updateBrowserUrl(newOptions);
+    
+    // Use the validation function to handle available options
+    setIframeLoading(true);
+    const validatedOptions = validateOptionsForCountry(newOptions, countryLanguageCode);
+    setSelectedOptions(validatedOptions);
+    updateBrowserUrl(validatedOptions);
   };
 
   // Generate URL based on current options and country
@@ -129,12 +150,17 @@ export const useRegressionTester = () => {
     }
 
     setIframeLoading(true);
-    setCurrentCountryIndex(currentCountryIndex + 1);
-    // Update browser URL with current country after changing index
     const newIndex = currentCountryIndex + 1;
     const newCountryCode = Object.keys(countryLanguageCodes)[newIndex];
+    
+    // Validate options for the new country
+    const validatedOptions = validateOptionsForCountry(selectedOptions, newCountryCode);
+    setSelectedOptions(validatedOptions);
+    setCurrentCountryIndex(newIndex);
+    
+    // Update browser URL with the new country
     const newNmsc = countryLanguageCodes[newCountryCode]?.nmsc;
-    updateBrowserUrl(selectedOptions, newCountryCode, newNmsc);
+    updateBrowserUrl(validatedOptions, newCountryCode, newNmsc);
   };
 
   // Navigate to previous country
@@ -145,12 +171,17 @@ export const useRegressionTester = () => {
     }
 
     setIframeLoading(true);
-    setCurrentCountryIndex(currentCountryIndex - 1);
-    // Update browser URL with current country after changing index
     const newIndex = currentCountryIndex - 1;
     const newCountryCode = Object.keys(countryLanguageCodes)[newIndex];
+    
+    // Validate options for the new country
+    const validatedOptions = validateOptionsForCountry(selectedOptions, newCountryCode);
+    setSelectedOptions(validatedOptions);
+    setCurrentCountryIndex(newIndex);
+    
+    // Update browser URL with the new country
     const newNmsc = countryLanguageCodes[newCountryCode]?.nmsc;
-    updateBrowserUrl(selectedOptions, newCountryCode, newNmsc);
+    updateBrowserUrl(validatedOptions, newCountryCode, newNmsc);
   };
 
   // Change to specific country
@@ -158,10 +189,15 @@ export const useRegressionTester = () => {
     const index = Object.keys(countryLanguageCodes).findIndex(key => key === code);
     if (index !== -1) {
       setIframeLoading(true);
+      
+      // Validate options for the new country
+      const validatedOptions = validateOptionsForCountry(selectedOptions, code);
+      setSelectedOptions(validatedOptions);
       setCurrentCountryIndex(index);
+      
       // Update browser URL with the new country
       const nmsc = countryLanguageCodes[code]?.nmsc;
-      updateBrowserUrl(selectedOptions, code, nmsc);
+      updateBrowserUrl(validatedOptions, code, nmsc);
     }
   };
 

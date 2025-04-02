@@ -2,6 +2,7 @@ export interface CountryLanguageCode {
   pretty: string;
   hasLexus?: boolean;
   hasStock?: boolean;
+  hasUsed?: boolean;
   nmsc: string;
 }
 

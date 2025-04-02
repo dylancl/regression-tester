@@ -33,6 +33,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   const countrySettings = countryLanguageCodes[countryLanguageCode] || {};
   const hasLexus = countrySettings.hasLexus || false;
   const hasStock = countrySettings.hasStock || false;
+  const hasUsed = countrySettings.hasUsed !== false; // Default to true if not explicitly set to false
 
   const handleChange = (event: SelectChangeEvent) => {
     const name = event.target.name;
@@ -113,7 +114,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               disabled={selectedOptions.component === 'used-stock-cars-pdf'}
               sx={{ bgcolor: 'background.paper' }}
             >
-              <MenuItem value="used">Used</MenuItem>
+              <MenuItem value="used" disabled={!hasUsed}>
+                Used {!hasUsed && '(Not Available)'}
+              </MenuItem>
               <MenuItem value="stock" disabled={!hasStock}>
                 Stock {!hasStock && '(Not Available)'}
               </MenuItem>
@@ -121,6 +124,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <FormHelperText>
               {!hasStock && selectedOptions.uscContext === 'used' 
                 ? 'Stock is not available for this country' 
+                : !hasUsed && selectedOptions.uscContext === 'stock'
+                ? 'Used is not available for this country'
                 : 'Used or Stock cars'}
             </FormHelperText>
           </FormControl>
@@ -182,8 +187,8 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="toyota">Toyota</MenuItem>
-              <MenuItem value="lexus" disabled={!hasLexus}>
-                Lexus {!hasLexus && '(Not Available)'}
+              <MenuItem value="lexus">
+                Lexus
               </MenuItem>
             </Select>
             <FormHelperText>Variant brand for the component</FormHelperText>

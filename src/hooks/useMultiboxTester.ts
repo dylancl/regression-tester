@@ -138,6 +138,7 @@ export const useMultiboxTester = () => {
       // Handle country-specific limitations
       const hasLexus = countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasLexus;
       const hasStock = countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasStock;
+      const hasUsed = countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasUsed !== false;
       
       if (name === 'brand' && value === 'lexus' && !hasLexus) {
         showNotification('Lexus is not available for this country');
@@ -147,6 +148,11 @@ export const useMultiboxTester = () => {
       if (name === 'uscContext' && value === 'stock' && !hasStock) {
         showNotification('Stock Cars is not set up for this country');
         newOptions.uscContext = 'used';
+      }
+      
+      if (name === 'uscContext' && value === 'used' && !hasUsed) {
+        showNotification('Used Cars is not available for this country');
+        newOptions.uscContext = 'stock';
       }
       
       // Update source frame with new configuration
@@ -168,12 +174,15 @@ export const useMultiboxTester = () => {
             // Handle country-specific compatibility for target frames
             const frameHasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
             const frameHasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
+            const frameHasUsed = countryLanguageCodes[frame.countryLanguageCode]?.hasUsed !== false;
             let updatedOptions = { ...frame.selectedOptions };
             
             if (name === 'brand' && value === 'lexus') {
               updatedOptions.brand = frameHasLexus ? value : 'toyota';
             } else if (name === 'uscContext' && value === 'stock') {
-              updatedOptions.uscContext = frameHasStock ? value : 'used';
+              updatedOptions.uscContext = frameHasStock ? value : (frameHasUsed ? 'used' : 'stock');
+            } else if (name === 'uscContext' && value === 'used') {
+              updatedOptions.uscContext = frameHasUsed ? value : (frameHasStock ? 'stock' : 'used');
             } else {
               updatedOptions[name] = value;
             }
