@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Box, AppBar, Toolbar, Typography, Container, styled, Button, Stack } from '@mui/material';
-import { Fullscreen, Dashboard } from '@mui/icons-material';
+import { Fullscreen, Dashboard, Cloud, Language } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -28,28 +28,33 @@ interface MainLayoutProps {
 const MainLayout = ({ children }: MainLayoutProps) => {
   const location = useLocation();
 
-  
   const isMultibox = location.pathname === '/multibox';
+  const isEnvironmentsPage = location.pathname === '/environments';
+  const isCountriesPage = location.pathname === '/countries';
+  const isSingleView = location.pathname === '/';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <StyledAppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Toyota Regression Tester {isMultibox ? '- Multibox' : ''}
+            Toyota Regression Tester 
+            {isMultibox ? '- Multibox' : 
+             isEnvironmentsPage ? '- Environments' : 
+             isCountriesPage ? '- Countries & NMSCs' : ''}
           </Typography>
           
           <Stack direction="row" spacing={1}>
             <Button
               component={Link}
               to="/"
-              variant={!isMultibox ? "contained" : "text"}
+              variant={isSingleView ? "contained" : "text"}
               color="inherit"
               startIcon={<Fullscreen />}
               sx={{ 
-                bgcolor: !isMultibox ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                bgcolor: isSingleView ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                 '&:hover': {
-                  bgcolor: !isMultibox ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                  bgcolor: isSingleView ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
                 }
               }}
             >
@@ -69,7 +74,39 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                 }
               }}
             >
-              Multibox View
+              Multibox
+            </Button>
+            
+            <Button
+              component={Link}
+              to="/countries"
+              variant={isCountriesPage ? "contained" : "text"}
+              color="inherit"
+              startIcon={<Language />}
+              sx={{ 
+                bgcolor: isCountriesPage ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                '&:hover': {
+                  bgcolor: isCountriesPage ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                }
+              }}
+            >
+              Countries
+            </Button>
+            
+            <Button
+              component={Link}
+              to="/environments"
+              variant={isEnvironmentsPage ? "contained" : "text"}
+              color="inherit"
+              startIcon={<Cloud />}
+              sx={{ 
+                bgcolor: isEnvironmentsPage ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                '&:hover': {
+                  bgcolor: isEnvironmentsPage ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
+                }
+              }}
+            >
+              Environments
             </Button>
           </Stack>
         </Toolbar>

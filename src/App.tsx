@@ -4,6 +4,8 @@ import { createAppTheme } from './theme';
 import MainLayout from './layouts/MainLayout';
 import RegressionTester from './components/RegressionTester';
 import MultiboxTester from './components/MultiboxTester';
+import EnvironmentsOverview from './components/EnvironmentsOverview';
+import CountriesOverview from './components/CountriesOverview';
 import { ThemeProvider, useThemeContext } from './contexts/ThemeContext';
 
 function App() {
@@ -30,6 +32,8 @@ const ThemedApp = () => {
           <Routes>
             <Route path="/" element={<RegressionTester />} />
             <Route path="/multibox" element={<MultiboxTester />} />
+            <Route path="/environments" element={<EnvironmentsOverview />} />
+            <Route path="/countries" element={<CountriesOverview />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </MainLayout>
