@@ -9,6 +9,7 @@ const DEFAULT_FRAME_SIZE = 400;
 const SCROLL_THRESHOLD = 50;
 const SCROLL_SPEED = 15;
 const SCROLL_INTERVAL_MS = 16;
+const GRID_SIZE = 20; // Size of grid cells in pixels
 
 export interface FrameLayout {
   height: number;
@@ -21,6 +22,7 @@ export interface UseFrameLayoutProps {
   frames: FrameConfig[];
   onUpdateFramePosition: (frameId: string, position: { x: number; y: number }) => void;
   onMarkFrameAsCustomSized: (frameId: string) => void;
+  snapToGrid?: boolean;
 }
 
 export interface UseFrameLayoutReturn {
@@ -44,6 +46,8 @@ export interface UseFrameLayoutReturn {
   setResizeDirection: (direction: string | null) => void;
   setDraggedFrameId: (frameId: string | null) => void;
   setDragOverFrameId: (frameId: string | null) => void;
+  snapToGrid: boolean;
+  setSnapToGrid: (snap: boolean) => void;
 }
 
 const getCursorStyleForDirection = (direction: string): string => {
@@ -61,10 +65,16 @@ const getCursorStyleForDirection = (direction: string): string => {
   return cursorStyles[direction] || 'default';
 };
 
+// Helper function to snap position to grid
+const snapToGridValue = (value: number, gridSize: number): number => {
+  return Math.round(value / gridSize) * gridSize;
+};
+
 export const useFrameLayout = ({
   frames,
   onUpdateFramePosition,
   onMarkFrameAsCustomSized,
+  snapToGrid: initialSnapToGrid = false,
 }: UseFrameLayoutProps): UseFrameLayoutReturn => {
   const [frameLayouts, setFrameLayouts] = useState<Record<string, FrameLayout>>({});
   const [resizingFrameId, setResizingFrameId] = useState<string | null>(null);
@@ -74,6 +84,7 @@ export const useFrameLayout = ({
   const [draggingFrame, setDraggingFrame] = useState<boolean>(false);
   const [activeFrameId, setActiveFrameId] = useState<string | null>(null);
   const [expandedConfigFrames, setExpandedConfigFrames] = useState<Set<string>>(new Set());
+  const [snapToGrid, setSnapToGrid] = useState<boolean>(initialSnapToGrid);
 
   const framesContainerRef = useRef<HTMLDivElement>(null);
   const frameRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -205,6 +216,24 @@ export const useFrameLayout = ({
     }
   };
 
+  // Helper function to snap position to grid if enabled
+  const maybeSnapToGrid = (position: { x: number, y: number }): { x: number, y: number } => {
+    if (!snapToGrid) return position;
+    return {
+      x: snapToGridValue(position.x, GRID_SIZE),
+      y: snapToGridValue(position.y, GRID_SIZE)
+    };
+  };
+
+  // Helper function to snap dimensions to grid if enabled
+  const maybeSnapDimensions = (dimensions: { width: number, height: number }): { width: number, height: number } => {
+    if (!snapToGrid) return dimensions;
+    return {
+      width: Math.max(MIN_FRAME_WIDTH, snapToGridValue(dimensions.width, GRID_SIZE)),
+      height: Math.max(MIN_FRAME_HEIGHT, snapToGridValue(dimensions.height, GRID_SIZE))
+    };
+  };
+
   // Frame drag handler
   const handleFrameMoveStart = (e: React.MouseEvent, frameId: string) => {
     e.preventDefault();
@@ -287,8 +316,13 @@ export const useFrameLayout = ({
       const deltaX = moveEvent.clientX - startX;
       const deltaY = moveEvent.clientY - startY;
 
-      const newX = Math.max(0, startPosition.x + deltaX);
-      const newY = Math.max(0, startPosition.y + deltaY);
+      let newX = Math.max(0, startPosition.x + deltaX);
+      let newY = Math.max(0, startPosition.y + deltaY);
+
+      // Apply grid snapping if enabled
+      const snappedPosition = maybeSnapToGrid({ x: newX, y: newY });
+      newX = snappedPosition.x;
+      newY = snappedPosition.y;
 
       setFrameLayouts(prev => ({
         ...prev,
@@ -431,6 +465,17 @@ export const useFrameLayout = ({
         const height = Math.max(MIN_FRAME_HEIGHT, startHeight - accumulatedMovementY);
         newHeight = height;
         newY = startPosition.y + (startHeight - height);
+      }
+
+      // Apply grid snapping if enabled
+      if (snapToGrid) {
+        const snappedPosition = maybeSnapToGrid({ x: newX, y: newY });
+        newX = snappedPosition.x;
+        newY = snappedPosition.y;
+        
+        const snappedDimensions = maybeSnapDimensions({ width: newWidth, height: newHeight });
+        newWidth = snappedDimensions.width;
+        newHeight = snappedDimensions.height;
       }
 
       return { x: newX, y: newY, width: newWidth, height: newHeight };
@@ -580,5 +625,7 @@ export const useFrameLayout = ({
     setResizeDirection,
     setDraggedFrameId,
     setDragOverFrameId,
+    snapToGrid,
+    setSnapToGrid,
   };
 };

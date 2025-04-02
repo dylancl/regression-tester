@@ -6,14 +6,17 @@ import {
   useMediaQuery,
   MenuItem,
   Menu,
-  useTheme
+  useTheme,
+  Tooltip
 } from '@mui/material';
 import { 
   Add, 
   Fullscreen,
   FullscreenExit,
   AspectRatio,
-  Search
+  Search,
+  GridOn,
+  GridOff
 } from '@mui/icons-material';
 import { useState, useCallback } from 'react';
 import { useMultiboxTester } from '../hooks/useMultiboxTester';
@@ -26,6 +29,7 @@ const MultiboxTester = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [showGrid, setShowGrid] = useState<boolean>(false);
   
   // Get multibox tester functionality from hook
   const {
@@ -47,7 +51,6 @@ const MultiboxTester = () => {
   const {
     frameLayouts,
     resizingFrameId,
-    // Remove the unused variable declaration
     draggedFrameId,
     dragOverFrameId,
     draggingFrame,
@@ -60,7 +63,9 @@ const MultiboxTester = () => {
     toggleMaximizeHeight,
     resetFrameSize,
     toggleConfigPanel,
-    setActiveFrameId
+    setActiveFrameId,
+    snapToGrid,
+    setSnapToGrid
   } = useFrameLayout({
     frames,
     onUpdateFramePosition: updateFramePosition,
@@ -89,10 +94,27 @@ const MultiboxTester = () => {
     setActiveFrameId(null);
   };
 
+  // Toggle grid display
+  const toggleGrid = () => {
+    setShowGrid(!showGrid);
+  };
+
+  // Toggle snap to grid
+  const toggleSnapToGrid = () => {
+    setSnapToGrid(!snapToGrid);
+    showNotification(snapToGrid ? 'Snap to grid disabled' : 'Snap to grid enabled');
+  };
+
   // Create a callback ref function that correctly sets the frameRefs
   const setFrameRef = useCallback((id: string) => (node: HTMLDivElement | null) => {
     frameRefs.current[id] = node;
   }, [frameRefs]);
+
+  // Grid size in pixels (must match the GRID_SIZE constant in useFrameLayout.ts)
+  const gridSize = 20;
+
+  // Calculate grid pattern size adjusted by zoom level
+  const adjustedGridSize = gridSize * (100 / zoomLevel);
 
   return (
     <Box sx={{ 
@@ -116,6 +138,13 @@ const MultiboxTester = () => {
           padding: zoomLevel < 100 ? `${(100 - zoomLevel) / 2}px` : 0, // Add padding when zoomed out
           minWidth: `${10000 / zoomLevel}%`, // Ensures content doesn't shrink when zooming out
           height: zoomLevel < 100 ? `${(10000 / zoomLevel) * 0.01}%` : 'auto',
+          // Grid background
+          backgroundSize: showGrid ? `${adjustedGridSize}px ${adjustedGridSize}px` : 'initial',
+          backgroundImage: showGrid ? 
+            `linear-gradient(to right, ${theme.palette.divider} 1px, transparent 1px),
+             linear-gradient(to bottom, ${theme.palette.divider} 1px, transparent 1px)` : 
+            'none',
+          backgroundPosition: '0 0',
         }}
       >
         {frames.map((frame) => {
@@ -230,7 +259,7 @@ const MultiboxTester = () => {
         </Alert>
       </Snackbar>
 
-      {/* Add Frame button repositioned next to zoom button */}
+      {/* Floating action buttons */}
       <Box
         sx={{
           position: 'fixed',
@@ -241,23 +270,53 @@ const MultiboxTester = () => {
           gap: 2,
         }}
       >
-        <Fab
-          color="primary"
-          size="small"
-          onClick={addNewFrame}
-          sx={{ zIndex: 1000 }}
-        >
-          <Add />
-        </Fab>
+        {/* Add frame button */}
+        <Tooltip title="Add frame">
+          <Fab
+            color="primary"
+            size="small"
+            onClick={addNewFrame}
+            sx={{ zIndex: 1000 }}
+          >
+            <Add />
+          </Fab>
+        </Tooltip>
         
-        <Fab
-          color="primary"
-          size="small"
-          onClick={toggleZoomControls}
-          sx={{ zIndex: 1000 }}
-        >
-          <Search />
-        </Fab>
+        {/* Grid toggle button */}
+        <Tooltip title={showGrid ? "Hide grid" : "Show grid"}>
+          <Fab
+            color={showGrid ? "primary" : "default"}
+            size="small"
+            onClick={toggleGrid}
+            sx={{ zIndex: 1000 }}
+          >
+            {showGrid ? <GridOn /> : <GridOff />}
+          </Fab>
+        </Tooltip>
+        
+        {/* Snap to grid toggle button */}
+        <Tooltip title={snapToGrid ? "Disable snap to grid" : "Enable snap to grid"}>
+          <Fab
+            color={snapToGrid ? "primary" : "default"}
+            size="small"
+            onClick={toggleSnapToGrid}
+            sx={{ zIndex: 1000 }}
+          >
+            <GridOn />
+          </Fab>
+        </Tooltip>
+        
+        {/* Zoom button */}
+        <Tooltip title="Zoom controls">
+          <Fab
+            color="primary"
+            size="small"
+            onClick={toggleZoomControls}
+            sx={{ zIndex: 1000 }}
+          >
+            <Search />
+          </Fab>
+        </Tooltip>
       </Box>
 
       {/* Zoom controls panel */}
