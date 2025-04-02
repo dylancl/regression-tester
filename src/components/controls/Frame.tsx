@@ -3,16 +3,13 @@ import {
   Box, 
   Card, 
   CardHeader, 
-  CardContent, 
   Typography, 
   IconButton, 
   Tooltip, 
-  Divider, 
   Stack,
   useTheme,
 } from '@mui/material';
 import { 
-  Settings, 
   ContentCopy, 
   MoreVert, 
   Close, 
@@ -26,8 +23,7 @@ import { FrameConfig } from '../../hooks/useMultiboxTester';
 import { FrameLayout } from '../../hooks/useFrameLayout';
 import { countryLanguageCodes } from '../../utils';
 import { ResizeHandles } from './ResizeHandles';
-import CountrySelector from './CountrySelector';
-import ControlPanel from './ControlPanel';
+import FloatingConfigMenu from './FloatingConfigMenu';
 
 interface FrameProps {
   frame: FrameConfig;
@@ -43,7 +39,6 @@ interface FrameProps {
   onRemove: (frameId: string) => void;
   onCopyUrl: (url: string) => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, frameId: string) => void;
-  onToggleConfig: (frameId: string) => void;
   onToggleSync: (frameId: string) => void;
   onIframeLoad: (frameId: string) => void;
   onOptionChange: (frameId: string, name: string, value: string) => void;
@@ -57,14 +52,12 @@ export const Frame: React.FC<FrameProps> = ({
   layout,
   isDragging,
   isResizing,
-  isConfigExpanded,
   globalSyncEnabled,
   onMove,
   onResize,
   onRemove,
   onCopyUrl,
   onMenuOpen,
-  onToggleConfig,
   onToggleSync,
   onIframeLoad,
   onOptionChange,
@@ -124,15 +117,6 @@ export const Frame: React.FC<FrameProps> = ({
                 {frame.syncEnabled ? <Sync fontSize="small" /> : <SyncDisabled fontSize="small" />}
               </IconButton>
             </Tooltip>
-            <Tooltip title="Toggle configuration">
-              <IconButton 
-                size="small" 
-                onClick={() => onToggleConfig(frame.id)}
-                color={isConfigExpanded ? "primary" : "default"}
-              >
-                <Settings fontSize="small" />
-              </IconButton>
-            </Tooltip>
             <Tooltip title="Copy URL">
               <IconButton 
                 size="small" 
@@ -170,48 +154,11 @@ export const Frame: React.FC<FrameProps> = ({
         }}
       />
       
-      {/* Configuration panel - conditionally rendered */}
-      {isConfigExpanded && (
-        <CardContent sx={{ pb: 1, pt: 1.5, overflow: 'auto', flexShrink: 0 }}>
-          <CountrySelector
-            countryLanguageCode={frame.countryLanguageCode}
-            goToNextCountry={() => {
-              const countryKeys = Object.keys(countryLanguageCodes);
-              const currentIndex = countryKeys.findIndex(k => k === frame.countryLanguageCode);
-              if (currentIndex < countryKeys.length - 1) {
-                onChangeCountry(frame.id, countryKeys[currentIndex + 1]);
-              } else {
-                onShowNotification("No more countries available");
-              }
-            }}
-            goToPreviousCountry={() => {
-              const countryKeys = Object.keys(countryLanguageCodes);
-              const currentIndex = countryKeys.findIndex(k => k === frame.countryLanguageCode);
-              if (currentIndex > 0) {
-                onChangeCountry(frame.id, countryKeys[currentIndex - 1]);
-              } else {
-                onShowNotification("First country - can't go back");
-              }
-            }}
-            changeCountry={(code) => onChangeCountry(frame.id, code)}
-          />
-          
-          <Divider sx={{ my: 1.5 }} />
-          
-          <ControlPanel
-            selectedOptions={frame.selectedOptions}
-            handleOptionChange={(name, value) => onOptionChange(frame.id, name, value)}
-            countryLanguageCode={frame.countryLanguageCode}
-          />
-        </CardContent>
-      )}
-      
-      {/* Iframe container */}
+      {/* Iframe container - Now takes up the full available space */}
       <Box sx={{ 
         flex: 1, 
         position: 'relative',
-        minHeight: isConfigExpanded ? '200px' : '360px', // Taller when config is hidden
-        mt: isConfigExpanded ? 1 : 0,
+        minHeight: '360px',
         overflow: 'hidden'
       }}>
         {/* Loading indicator */}
@@ -252,6 +199,14 @@ export const Frame: React.FC<FrameProps> = ({
           }}
           onLoad={() => onIframeLoad(frame.id)}
           title={`Frame ${frame.id}`}
+        />
+        
+        {/* Floating configuration menu */}
+        <FloatingConfigMenu
+          frame={frame}
+          onChangeCountry={onChangeCountry}
+          onOptionChange={onOptionChange}
+          onShowNotification={onShowNotification}
         />
       </Box>
       
