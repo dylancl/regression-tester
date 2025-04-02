@@ -16,7 +16,9 @@ import {
   AspectRatio,
   Search,
   GridOn,
-  GridOff
+  GridOff,
+  Sync,
+  SyncDisabled
 } from '@mui/icons-material';
 import { useState, useCallback } from 'react';
 import { useMultiboxTester } from '../hooks/useMultiboxTester';
@@ -35,6 +37,7 @@ const MultiboxTester = () => {
   const {
     frames,
     notification,
+    globalSyncEnabled,
     addNewFrame,
     removeFrame,
     handleOptionChange,
@@ -45,6 +48,8 @@ const MultiboxTester = () => {
     markFrameAsCustomSized,
     resetFrameCustomSize,
     updateFramePosition,
+    toggleFrameSync,
+    toggleGlobalSync,
   } = useMultiboxTester();
 
   // Get frame layout functionality from hook  
@@ -180,12 +185,14 @@ const MultiboxTester = () => {
                 isResizing={resizingFrameId === frame.id}
                 isDraggedOver={dragOverFrameId === frame.id}
                 isConfigExpanded={expandedConfigFrames.has(frame.id)}
+                globalSyncEnabled={globalSyncEnabled}
                 onMove={handleFrameMoveStart}
                 onResize={handleMultiDirectionResize}
                 onRemove={removeFrame}
                 onCopyUrl={copyUrlToClipboard}
                 onMenuOpen={handleMenuOpen}
                 onToggleConfig={toggleConfigPanel}
+                onToggleSync={toggleFrameSync}
                 onIframeLoad={handleIframeLoad}
                 onOptionChange={handleOptionChange}
                 onChangeCountry={changeCountry}
@@ -270,6 +277,18 @@ const MultiboxTester = () => {
           gap: 2,
         }}
       >
+        {/* Global sync button */}
+        <Tooltip title={globalSyncEnabled ? "Disable global sync" : "Enable global sync"}>
+          <Fab
+            color={globalSyncEnabled ? "primary" : "default"}
+            size="small"
+            onClick={toggleGlobalSync}
+            sx={{ zIndex: 1000 }}
+          >
+            {globalSyncEnabled ? <Sync /> : <SyncDisabled />}
+          </Fab>
+        </Tooltip>
+        
         {/* Add frame button */}
         <Tooltip title="Add frame">
           <Fab

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { SelectedOptions } from '../types';
 import { countryLanguageCodes, generateUrl } from '../utils';
 
-// Default options for new frames
+// Default configuration for new frames
 const defaultOptions: SelectedOptions = {
   environment: 'prev',
   component: 'car-filter',
@@ -12,32 +12,33 @@ const defaultOptions: SelectedOptions = {
   variantBrand: 'toyota',
 };
 
-// Interface for frame configuration
+// Main configuration interface for each frame
 export interface FrameConfig {
   id: string;
   selectedOptions: SelectedOptions;
   countryLanguageCode: string;
   generatedUrl: string;
   iframeLoading: boolean;
-  customSized?: boolean; // Track if the frame has been manually resized
-  position?: { x: number, y: number }; // Track frame position
+  syncEnabled?: boolean; // For per-frame sync functionality
+  customSized?: boolean; // For manual frame resizing
+  position?: { x: number, y: number };
 }
 
 export const useMultiboxTester = () => {
-  // Array of frame configurations
+  // Core state management
   const [frames, setFrames] = useState<FrameConfig[]>([]);
   const [notification, setNotification] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [globalSyncEnabled, setGlobalSyncEnabled] = useState<boolean>(false);
 
-  // Initialize with default frames
+  // Initialize default frames on first load
   useEffect(() => {
     if (frames.length === 0) {
-      // Start with two frames for comparison by default - with proper positioning
       addInitialFrames();
     }
   }, []);
 
-  // Initialize frames with proper spacing
+  // Creates initial frames for comparison
   const addInitialFrames = () => {
     const initialFrames: FrameConfig[] = [
       createFrameConfig(0),
@@ -46,17 +47,12 @@ export const useMultiboxTester = () => {
     setFrames(initialFrames);
   };
 
-  // Create a new frame config with proper positioning
+  // Factory function for creating frame configurations
   const createFrameConfig = (index: number): FrameConfig => {
-    // Unique ID for the frame
     const id = `frame-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-  
     const defaultCountryCode = Object.keys(countryLanguageCodes)[0];
-  
     const initialUrl = generateUrl(defaultOptions, defaultCountryCode);
-    
-    // Calculate position with significant offset to avoid overlapping
-    const offset = 60; // Clear separation between frames
+    const offset = 60; // Separation between frames
     
     return {
       id,
@@ -65,6 +61,7 @@ export const useMultiboxTester = () => {
       generatedUrl: initialUrl,
       iframeLoading: true,
       customSized: false,
+      syncEnabled: false,
       position: { 
         x: 100 + (offset * index), 
         y: 100 + (offset * index) 
@@ -72,6 +69,7 @@ export const useMultiboxTester = () => {
     };
   };
 
+  // Auto-hide notifications after timeout
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
@@ -84,14 +82,12 @@ export const useMultiboxTester = () => {
     }
   }, [notification]);
 
-  // Add a new frame with default options
+  // Frame management functions
   const addNewFrame = () => {
     const newFrame = createFrameConfig(frames.length);
-    
     setFrames(current => [...current, newFrame]);
   };
 
-  // Update frame position
   const updateFramePosition = (frameId: string, position: { x: number, y: number }) => {
     setFrames(current => 
       current.map(frame => 
@@ -102,7 +98,6 @@ export const useMultiboxTester = () => {
     );
   };
 
-  // Reorder frames when dragged and dropped
   const reorderFrames = (sourceId: string, targetId: string) => {
     setFrames(currentFrames => {
       const updatedFrames = [...currentFrames];
@@ -112,17 +107,13 @@ export const useMultiboxTester = () => {
       
       if (sourceIndex === -1 || targetIndex === -1) return currentFrames;
       
-      // Remove the source frame
       const [sourceFrame] = updatedFrames.splice(sourceIndex, 1);
-      
-      // Insert the source frame at the target position
       updatedFrames.splice(targetIndex, 0, sourceFrame);
       
       return updatedFrames;
     });
   };
 
-  // Remove a frame by ID
   const removeFrame = (id: string) => {
     if (frames.length <= 1) {
       showNotification("Cannot remove the last frame");
@@ -132,61 +123,120 @@ export const useMultiboxTester = () => {
     setFrames(current => current.filter(frame => frame.id !== id));
   };
 
-  // Handle option changes for a specific frame
+  // Core configuration handling with sync functionality
   const handleOptionChange = (frameId: string, name: string, value: string) => {
-    setFrames(current => 
-      current.map(frame => {
-        if (frame.id !== frameId) return frame;
+    setFrames(current => {
+      const updatedFrames = [...current];
+      const sourceFrameIndex = updatedFrames.findIndex(frame => frame.id === frameId);
+      
+      if (sourceFrameIndex === -1) return current;
+      
+      // Update source frame configuration
+      const sourceFrame = updatedFrames[sourceFrameIndex];
+      const newOptions = { ...sourceFrame.selectedOptions, [name]: value };
+      
+      // Handle country-specific limitations
+      const hasLexus = countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasLexus;
+      const hasStock = countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasStock;
+      
+      if (name === 'brand' && value === 'lexus' && !hasLexus) {
+        showNotification('Lexus is not available for this country');
+        newOptions.brand = 'toyota';
+      }
+      
+      if (name === 'uscContext' && value === 'stock' && !hasStock) {
+        showNotification('Stock Cars is not set up for this country');
+        newOptions.uscContext = 'used';
+      }
+      
+      // Update source frame with new configuration
+      const generatedUrl = generateUrl(newOptions, sourceFrame.countryLanguageCode);
+      updatedFrames[sourceFrameIndex] = {
+        ...sourceFrame,
+        selectedOptions: newOptions,
+        generatedUrl,
+        iframeLoading: true
+      };
+      
+      // Sync changes to other frames if enabled
+      const shouldSync = globalSyncEnabled || sourceFrame.syncEnabled;
+      if (shouldSync) {
+        showNotification('Syncing configuration to other frames');
         
-        const newOptions = { ...frame.selectedOptions, [name]: value };
-        
-        const hasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
-        const hasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
-        
-
-        if (name === 'brand' && value === 'lexus' && !hasLexus) {
-          showNotification('Lexus is not available for this country');
-          newOptions.brand = 'toyota';
-        }
-        
-        if (name === 'uscContext' && value === 'stock' && !hasStock) {
-          showNotification('Stock Cars is not set up for this country');
-          newOptions.uscContext = 'used';
-        }
-        
-        // Generate new URL based on the updated options
-        const generatedUrl = generateUrl(newOptions, frame.countryLanguageCode);
-        
-        return {
-          ...frame,
-          selectedOptions: newOptions,
-          generatedUrl,
-          iframeLoading: true
-        };
-      })
-    );
+        updatedFrames.forEach((frame, index) => {
+          if (index !== sourceFrameIndex) {
+            // Handle country-specific compatibility for target frames
+            const frameHasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
+            const frameHasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
+            let updatedOptions = { ...frame.selectedOptions };
+            
+            if (name === 'brand' && value === 'lexus') {
+              updatedOptions.brand = frameHasLexus ? value : 'toyota';
+            } else if (name === 'uscContext' && value === 'stock') {
+              updatedOptions.uscContext = frameHasStock ? value : 'used';
+            } else {
+              updatedOptions[name] = value;
+            }
+            
+            // Update target frame
+            const frameGeneratedUrl = generateUrl(updatedOptions, frame.countryLanguageCode);
+            updatedFrames[index] = {
+              ...frame,
+              selectedOptions: updatedOptions,
+              generatedUrl: frameGeneratedUrl,
+              iframeLoading: true
+            };
+          }
+        });
+      }
+      
+      return updatedFrames;
+    });
   };
 
-  // Change country for a specific frame
+  // Country change handler with sync functionality
   const changeCountry = (frameId: string, code: string) => {
-    setFrames(current => 
-      current.map(frame => {
-        if (frame.id !== frameId) return frame;
+    setFrames(current => {
+      const updatedFrames = [...current];
+      const sourceFrameIndex = updatedFrames.findIndex(frame => frame.id === frameId);
+      
+      if (sourceFrameIndex === -1) return current;
+      
+      // Update source frame country
+      const sourceFrame = updatedFrames[sourceFrameIndex];
+      const generatedUrl = generateUrl(sourceFrame.selectedOptions, code);
+      
+      updatedFrames[sourceFrameIndex] = {
+        ...sourceFrame,
+        countryLanguageCode: code,
+        generatedUrl,
+        iframeLoading: true
+      };
+      
+      // Sync country to other frames if enabled
+      const shouldSync = globalSyncEnabled || sourceFrame.syncEnabled;
+      if (shouldSync) {
+        showNotification('Syncing country to other frames');
         
-        // Generate new URL with the changed country
-        const generatedUrl = generateUrl(frame.selectedOptions, code);
-        
-        return {
-          ...frame,
-          countryLanguageCode: code,
-          generatedUrl,
-          iframeLoading: true
-        };
-      })
-    );
+        updatedFrames.forEach((frame, index) => {
+          if (index !== sourceFrameIndex) {
+            const frameGeneratedUrl = generateUrl(frame.selectedOptions, code);
+            
+            updatedFrames[index] = {
+              ...frame,
+              countryLanguageCode: code,
+              generatedUrl: frameGeneratedUrl,
+              iframeLoading: true
+            };
+          }
+        });
+      }
+      
+      return updatedFrames;
+    });
   };
 
-  // Copy URL to clipboard
+  // Utility functions
   const copyUrlToClipboard = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
@@ -196,7 +246,6 @@ export const useMultiboxTester = () => {
     }
   };
 
-  // Handle iframe load completion
   const handleIframeLoad = (frameId: string) => {
     setFrames(current => 
       current.map(frame => 
@@ -207,17 +256,15 @@ export const useMultiboxTester = () => {
     );
   };
 
-  // Toggle sidebar visibility
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Show notification
   const showNotification = (message: string) => {
     setNotification(message);
   };
 
-  // Mark a frame as custom sized
+  // Frame sizing functions
   const markFrameAsCustomSized = (frameId: string) => {
     setFrames(current => 
       current.map(frame => 
@@ -228,7 +275,6 @@ export const useMultiboxTester = () => {
     );
   };
 
-  // Reset frame custom size flag
   const resetFrameCustomSize = (frameId: string) => {
     setFrames(current => 
       current.map(frame => 
@@ -239,10 +285,39 @@ export const useMultiboxTester = () => {
     );
   };
 
+  // Sync configuration toggles
+  const toggleFrameSync = (frameId: string) => {
+    const frame = frames.find(f => f.id === frameId);
+    if (!frame) return;
+    
+    const newSyncState = !frame.syncEnabled;
+    
+    setFrames(current => 
+      current.map(f => 
+        f.id === frameId 
+          ? { ...f, syncEnabled: newSyncState } 
+          : f
+      )
+    );
+    
+    const countryName = countryLanguageCodes[frame.countryLanguageCode]?.pretty || 'Frame';
+    showNotification(newSyncState 
+      ? `Frame sync enabled for ${countryName}` 
+      : `Frame sync disabled for ${countryName}`);
+  };
+
+  const toggleGlobalSync = () => {
+    const newGlobalSyncState = !globalSyncEnabled;
+    setGlobalSyncEnabled(newGlobalSyncState);
+    showNotification(newGlobalSyncState ? 'Global sync enabled' : 'Global sync disabled');
+  };
+
+  // Expose interface for the hook
   return {
     frames,
     notification,
     sidebarOpen,
+    globalSyncEnabled,
     addNewFrame,
     removeFrame,
     handleOptionChange,
@@ -255,5 +330,7 @@ export const useMultiboxTester = () => {
     markFrameAsCustomSized,
     resetFrameCustomSize,
     updateFramePosition,
+    toggleFrameSync,
+    toggleGlobalSync,
   };
 };

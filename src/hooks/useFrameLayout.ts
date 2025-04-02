@@ -3,10 +3,10 @@ import { FrameConfig } from './useMultiboxTester';
 
 // Constants
 const CONTAINER_PADDING = 200;
-const MIN_FRAME_WIDTH = 300;
-const MIN_FRAME_HEIGHT = 200;
-const DEFAULT_FRAME_SIZE = 400;
-const SCROLL_THRESHOLD = 50;
+const MIN_FRAME_WIDTH = 400;
+const MIN_FRAME_HEIGHT = 800;
+const DEFAULT_FRAME_SIZE = 800;
+const SCROLL_THRESHOLD = 100;
 const SCROLL_SPEED = 15;
 const SCROLL_INTERVAL_MS = 16;
 const GRID_SIZE = 20; // Size of grid cells in pixels
@@ -154,6 +154,7 @@ export const useFrameLayout = ({
   }, [frameLayouts, draggingFrame, resizingFrameId, frames, onUpdateFramePosition]);
 
   // Helper function for setting up auto-scroll
+  // when dragging or resizing frames
   const setupAutoScroll = (
     isActive: RefObject<boolean>,
     getScrollDirections: () => { horizontal: number, vertical: number }

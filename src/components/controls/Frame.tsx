@@ -16,7 +16,9 @@ import {
   ContentCopy, 
   MoreVert, 
   Close, 
-  OpenWith
+  OpenWith,
+  Sync,
+  SyncDisabled
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { CircularProgress } from '@mui/material';
@@ -35,12 +37,14 @@ interface FrameProps {
   isResizing: boolean;
   isDraggedOver: boolean;
   isConfigExpanded: boolean;
+  globalSyncEnabled: boolean;
   onMove: (e: React.MouseEvent, frameId: string) => void;
   onResize: (e: React.MouseEvent, frameId: string, direction: string) => void;
   onRemove: (frameId: string) => void;
   onCopyUrl: (url: string) => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, frameId: string) => void;
   onToggleConfig: (frameId: string) => void;
+  onToggleSync: (frameId: string) => void;
   onIframeLoad: (frameId: string) => void;
   onOptionChange: (frameId: string, name: string, value: string) => void;
   onChangeCountry: (frameId: string, code: string) => void;
@@ -54,12 +58,14 @@ export const Frame: React.FC<FrameProps> = ({
   isDragging,
   isResizing,
   isConfigExpanded,
+  globalSyncEnabled,
   onMove,
   onResize,
   onRemove,
   onCopyUrl,
   onMenuOpen,
   onToggleConfig,
+  onToggleSync,
   onIframeLoad,
   onOptionChange,
   onChangeCountry,
@@ -108,6 +114,16 @@ export const Frame: React.FC<FrameProps> = ({
         }
         action={
           <Stack direction="row" spacing={1}>
+            <Tooltip title={frame.syncEnabled ? "Disable config sync" : "Enable config sync"}>
+              <IconButton 
+                size="small" 
+                onClick={() => onToggleSync(frame.id)}
+                color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
+                disabled={globalSyncEnabled}
+              >
+                {frame.syncEnabled ? <Sync fontSize="small" /> : <SyncDisabled fontSize="small" />}
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Toggle configuration">
               <IconButton 
                 size="small" 
