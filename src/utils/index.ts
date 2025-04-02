@@ -191,8 +191,17 @@ export const parseUrlParams = (): Record<string, string> => {
   const params = new URLSearchParams(window.location.search);
   const selectedOptions: Record<string, string> = {};
   
+  // Special handling for country parameter which may contain a slash
+  const countryParam = params.get('country');
+  if (countryParam) {
+    selectedOptions['country'] = countryParam;
+  }
+  
+  // Process other parameters
   params.forEach((value, key) => {
-    selectedOptions[key] = value;
+    if (key !== 'country') { // Skip country since we already handled it
+      selectedOptions[key] = value;
+    }
   });
   
   return selectedOptions;

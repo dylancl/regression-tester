@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { SelectedOptions } from '../types';
-import { 
-  countryLanguageCodes, 
-  generateUrl, 
-  parseUrlParams, 
-  createUrlWithParams 
+import {
+  countryLanguageCodes,
+  generateUrl,
+  parseUrlParams,
+  createUrlWithParams
 } from '../utils';
 
 // Default options
@@ -31,11 +31,11 @@ export const useRegressionTester = () => {
   // Initialize from URL params and generate initial URL
   useEffect(() => {
     const urlParams = parseUrlParams();
-    
+
     if (Object.keys(urlParams).length > 0) {
       // Create a copy of params that doesn't include country/nmsc
       const { country, nmsc, ...optionParams } = urlParams;
-      
+
       // If country param is present, determine the correct country index
       let initialCountryIndex = 0;
       if (country) {
@@ -46,15 +46,18 @@ export const useRegressionTester = () => {
           initialCountryIndex = countryIndex;
         }
       }
-      
-      // Set both states at once to avoid timing issues
+
+      // Set states with the correct values
       setSelectedOptions({ ...defaultOptions, ...optionParams });
       setCurrentCountryIndex(initialCountryIndex);
-      
-      // Generate the URL directly with the correct values, don't rely on state updates yet
+
+      // Generate the URL directly with the correct country code, don't rely on state updates yet
       const initialCountryCode = Object.keys(countryLanguageCodes)[initialCountryIndex];
       const initialUrl = generateUrl({ ...defaultOptions, ...optionParams }, initialCountryCode);
+
+      // Set the iframe URL and mark as loading
       setGeneratedUrl(initialUrl);
+      setIframeLoading(true);
     } else {
       // No params, use defaults and generate URL
       const defaultCountryCode = Object.keys(countryLanguageCodes)[0];
@@ -69,7 +72,7 @@ export const useRegressionTester = () => {
       const timer = setTimeout(() => {
         setNotification(null);
       }, 3000);
-      
+
       return () => {
         clearTimeout(timer);
       };
@@ -85,23 +88,23 @@ export const useRegressionTester = () => {
   const handleOptionChange = (name: string, value: string) => {
     // Make a copy of the current options
     const newOptions = { ...selectedOptions, [name]: value };
-    
+
     // Handle incompatible options
     const hasLexus = countryLanguageCodes[countryLanguageCode]?.hasLexus;
     const hasStock = countryLanguageCodes[countryLanguageCode]?.hasStock;
-    
+
     // Reset brand if Lexus is not available for this country
     if (name === 'brand' && value === 'lexus' && !hasLexus) {
       showNotification('Lexus is not available for this country');
       newOptions.brand = 'toyota';
     }
-    
+
     // Reset uscContext if Stock is not available for this country
     if (name === 'uscContext' && value === 'stock' && !hasStock) {
       showNotification('Stock Cars is not set up for this country');
       newOptions.uscContext = 'used';
     }
-    
+
     setSelectedOptions(newOptions);
     updateBrowserUrl(newOptions);
   };
@@ -117,7 +120,7 @@ export const useRegressionTester = () => {
     // Use the provided country/NMSC or default to current values
     const codeToUse = countryCode || countryLanguageCode;
     const nmscToUse = nmsc || countryLanguageCodes[countryLanguageCode]?.nmsc;
-    
+
     // Create URL with country and NMSC information
     const newUrl = createUrlWithParams(options, codeToUse, nmscToUse);
     window.history.pushState({}, '', newUrl);
@@ -129,7 +132,7 @@ export const useRegressionTester = () => {
       showNotification("No more countries available - can't go forward.");
       return;
     }
-    
+
     setIframeLoading(true);
     setCurrentCountryIndex(currentCountryIndex + 1);
     // Update browser URL with current country after changing index
@@ -145,7 +148,7 @@ export const useRegressionTester = () => {
       showNotification("First country - can't go back.");
       return;
     }
-    
+
     setIframeLoading(true);
     setCurrentCountryIndex(currentCountryIndex - 1);
     // Update browser URL with current country after changing index
