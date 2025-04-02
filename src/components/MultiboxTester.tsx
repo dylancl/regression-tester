@@ -27,13 +27,13 @@ import { useZoomControls } from '../hooks/useZoomControls';
 import { Frame } from './controls/Frame';
 import { ZoomControls } from './controls/ZoomControls';
 
+
 const MultiboxTester = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [showGrid, setShowGrid] = useState<boolean>(false);
   
-  // Get multibox tester functionality from hook
   const {
     frames,
     notification,
@@ -51,8 +51,7 @@ const MultiboxTester = () => {
     toggleFrameSync,
     toggleGlobalSync,
   } = useMultiboxTester();
-
-  // Get frame layout functionality from hook  
+ 
   const {
     frameLayouts,
     resizingFrameId,
@@ -77,7 +76,6 @@ const MultiboxTester = () => {
     onMarkFrameAsCustomSized: markFrameAsCustomSized,
   });
 
-  // Get zoom controls functionality from hook
   const {
     zoomLevel,
     showZoomControls,
@@ -87,24 +85,20 @@ const MultiboxTester = () => {
     toggleZoomControls
   } = useZoomControls();
 
-  // Handle menu open
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, frameId: string) => {
     setMenuAnchorEl(event.currentTarget);
     setActiveFrameId(frameId);
   };
 
-  // Handle menu close
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
     setActiveFrameId(null);
   };
 
-  // Toggle grid display
   const toggleGrid = () => {
     setShowGrid(!showGrid);
   };
 
-  // Toggle snap to grid
   const toggleSnapToGrid = () => {
     setSnapToGrid(!snapToGrid);
     showNotification(snapToGrid ? 'Snap to grid disabled' : 'Snap to grid enabled');
@@ -127,7 +121,8 @@ const MultiboxTester = () => {
       width: '100%',
       overflow: 'auto',
       p: 2,
-      backgroundColor: theme.palette.background.default
+      backgroundColor: theme.palette.background.default,
+      position: 'relative'
     }}>
       {/* Draggable and resizable frames container - Apply zoom to the entire container */}
       <Box 
@@ -150,6 +145,21 @@ const MultiboxTester = () => {
              linear-gradient(to bottom, ${theme.palette.divider} 1px, transparent 1px)` : 
             'none',
           backgroundPosition: '0 0',
+          '&::after': showGrid ? {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none',
+            background: `radial-gradient(
+              circle at center,
+              transparent 30%,
+              ${theme.palette.background.default} 100%
+            )`,
+            zIndex: 0 // Lower z-index so it doesn't overlay the frames
+          } : {}
         }}
       >
         {frames.map((frame) => {
