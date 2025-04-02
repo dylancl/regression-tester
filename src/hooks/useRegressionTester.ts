@@ -47,8 +47,8 @@ export const useRegressionTester = () => {
       }
 
       // Set states with the correct values
-      setSelectedOptions({ ...defaultOptions, ...optionParams });
       setCurrentCountryIndex(initialCountryIndex);
+      setSelectedOptions({ ...defaultOptions, ...optionParams });
 
       // Generate the URL directly with the correct country code, don't rely on state updates yet
       const initialCountryCode = Object.keys(countryLanguageCodes)[initialCountryIndex];

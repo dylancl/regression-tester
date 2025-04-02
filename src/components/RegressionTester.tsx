@@ -1,8 +1,8 @@
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  Snackbar, 
+import {
+  Box,
+  Paper,
+  Typography,
+  Snackbar,
   Alert,
   CircularProgress,
   IconButton,
@@ -13,11 +13,11 @@ import {
   Divider,
   Stack,
 } from '@mui/material';
-import { 
-  ChevronLeft, 
-  ContentCopy, 
-  Menu, 
-  DarkMode, 
+import {
+  ChevronLeft,
+  ContentCopy,
+  Menu,
+  DarkMode,
   LightMode,
   Settings,
   OpenInNew
@@ -34,7 +34,7 @@ const RegressionTester = () => {
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   const {
     selectedOptions,
     countryLanguageCode,
@@ -52,13 +52,13 @@ const RegressionTester = () => {
   } = useRegressionTester();
 
   const [urlHovered, setUrlHovered] = useState(false);
-  
+
   // Calculate the drawer width based on screen size
   const drawerWidth = isMobile ? '100%' : 340;
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
+    <Box sx={{
+      display: 'flex',
       height: '100%',
       overflow: 'hidden' // Prevent scrolling
     }}>
@@ -88,8 +88,8 @@ const RegressionTester = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(66, 66, 66, 0.2)' 
+            backgroundColor: theme.palette.mode === 'dark'
+              ? 'rgba(66, 66, 66, 0.2)'
               : 'rgba(248, 248, 248, 0.8)',
           }}
         >
@@ -111,9 +111,9 @@ const RegressionTester = () => {
           </Stack>
         </Box>
 
-        <Box sx={{ 
-          p: 2, 
-          overflowY: 'auto', 
+        <Box sx={{
+          p: 2,
+          overflowY: 'auto',
           height: 'calc(100% - 60px)',
           display: 'flex',
           flexDirection: 'column',
@@ -134,13 +134,13 @@ const RegressionTester = () => {
                 Generated URL
               </Typography>
               <Tooltip title="Copy URL">
-                <IconButton 
-                  onClick={copyUrlToClipboard} 
-                  color="primary" 
+                <IconButton
+                  onClick={copyUrlToClipboard}
+                  color="primary"
                   size="small"
-                  sx={{ 
+                  sx={{
                     transition: theme.transitions.create('transform'),
-                    '&:hover': { transform: 'scale(1.1)' } 
+                    '&:hover': { transform: 'scale(1.1)' }
                   }}
                 >
                   <ContentCopy fontSize="small" />
@@ -148,7 +148,7 @@ const RegressionTester = () => {
               </Tooltip>
             </Box>
             <Divider sx={{ mb: 1 }} />
-            <Box 
+            <Box
               onMouseEnter={() => setUrlHovered(true)}
               onMouseLeave={() => setUrlHovered(false)}
               sx={{
@@ -162,11 +162,11 @@ const RegressionTester = () => {
                 }
               }}
             >
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   height: urlHovered ? 'auto' : '40px', // Fixed height when not hovered
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.05)' 
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.05)'
                     : theme.palette.grey[100],
                   p: 1.5,
                   borderRadius: 1,
@@ -175,17 +175,17 @@ const RegressionTester = () => {
                     easing: theme.transitions.easing.easeInOut,
                   }),
                   '&:hover': {
-                    backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.1)' 
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
                       : theme.palette.grey[200]
                   }
                 }}
               >
                 {/* Always render both views, but hide one with opacity */}
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
                     opacity: urlHovered ? 0 : 1,
                     height: urlHovered ? 0 : '24px',
@@ -207,20 +207,20 @@ const RegressionTester = () => {
                   </Typography>
                   <OpenInNew fontSize="small" color="action" sx={{ opacity: 0.6, ml: 1 }} />
                 </Box>
-                
+
                 {/* Expanded view - always in DOM but conditionally shown */}
                 <motion.div
                   initial={false}
-                  animate={{ 
+                  animate={{
                     opacity: urlHovered ? 1 : 0,
                     height: urlHovered ? 'auto' : 0
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 0.25,
                     ease: "easeInOut"
                   }}
-                  style={{ 
-                    overflow: 'hidden', 
+                  style={{
+                    overflow: 'hidden',
                     transformOrigin: 'top'
                   }}
                 >
@@ -240,7 +240,7 @@ const RegressionTester = () => {
               </Box>
             </Box>
           </Paper>
-          
+
           {/* Country Selector first for better user flow */}
           <CountrySelector
             countryLanguageCode={countryLanguageCode}
@@ -248,7 +248,7 @@ const RegressionTester = () => {
             goToPreviousCountry={goToPreviousCountry}
             changeCountry={changeCountry}
           />
-          
+
           {/* Control Panel for settings */}
           <ControlPanel
             selectedOptions={selectedOptions}
@@ -284,14 +284,14 @@ const RegressionTester = () => {
       >
         {/* Toolbar when sidebar is closed */}
         {!sidebarOpen && (
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             alignItems: 'center',
             height: '48px',
             px: 1,
             borderBottom: `1px solid ${theme.palette.divider}`,
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(66, 66, 66, 0.2)' 
+            backgroundColor: theme.palette.mode === 'dark'
+              ? 'rgba(66, 66, 66, 0.2)'
               : 'rgba(248, 248, 248, 0.8)',
           }}>
             <IconButton onClick={toggleSidebar} size="small" sx={{ mr: 1 }}>
@@ -330,8 +330,8 @@ const RegressionTester = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 5,
-                bgcolor: theme.palette.mode === 'dark' 
-                  ? 'rgba(0, 0, 0, 0.7)' 
+                bgcolor: theme.palette.mode === 'dark'
+                  ? 'rgba(0, 0, 0, 0.7)'
                   : 'rgba(255, 255, 255, 0.7)',
               }}
             >
@@ -346,18 +346,34 @@ const RegressionTester = () => {
           )}
 
           {/* The iframe with the component preview */}
-          <iframe
-            src={generatedUrl}
-            style={{
-              border: 'none',
-              width: '100%',
-              height: '100%',
-              display: 'block',
-              backgroundColor: theme.palette.mode === 'dark' ? '#1E1E1E' : '#FFFFFF'
-            }}
-            onLoad={handleIframeLoad}
-            title="Component Preview"
-          />
+          {generatedUrl ? (
+            <iframe
+              src={generatedUrl}
+              style={{
+                border: 'none',
+                width: '100%',
+                height: '100%',
+                display: 'block',
+                backgroundColor: theme.palette.mode === 'dark' ? '#1E1E1E' : '#FFFFFF'
+              }}
+              onLoad={handleIframeLoad}
+              title="Component Preview"
+            />
+          ) : (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                color: theme.palette.text.secondary,
+              }}
+            >
+              <Typography variant="body2">
+                Please select a component and country to view the preview.
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -367,8 +383,8 @@ const RegressionTester = () => {
         autoHideDuration={3000}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          severity="info" 
+        <Alert
+          severity="info"
           variant="filled"
           sx={{
             backgroundColor: theme.palette.primary.main,
