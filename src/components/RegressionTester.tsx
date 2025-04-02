@@ -12,7 +12,8 @@ import {
   Tooltip,
   Divider,
   Stack,
-  Fade
+  Fade,
+  Collapse
 } from '@mui/material';
 import { 
   ChevronLeft, 
@@ -20,7 +21,8 @@ import {
   Menu, 
   DarkMode, 
   LightMode,
-  Settings
+  Settings,
+  OpenInNew
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useRegressionTester } from '../hooks/useRegressionTester';
@@ -28,6 +30,7 @@ import { countryLanguageCodes } from '../utils';
 import ControlPanel from './controls/ControlPanel';
 import CountrySelector from './controls/CountrySelector';
 import { useThemeContext } from '../contexts/ThemeContext';
+import { useState } from 'react';
 
 const RegressionTester = () => {
   const theme = useTheme();
@@ -50,6 +53,8 @@ const RegressionTester = () => {
     toggleSidebar,
   } = useRegressionTester();
 
+  const [urlHovered, setUrlHovered] = useState(false);
+  
   // Calculate the drawer width based on screen size
   const drawerWidth = isMobile ? '100%' : 340;
 
@@ -93,7 +98,7 @@ const RegressionTester = () => {
           <Stack direction="row" spacing={1} alignItems="center">
             <Settings color="primary" fontSize="small" />
             <Typography variant="subtitle1" color="primary" fontWeight="medium">
-              Regression Controls
+              Configuration
             </Typography>
           </Stack>
           <Stack direction="row" spacing={1}>
@@ -145,37 +150,97 @@ const RegressionTester = () => {
               </Tooltip>
             </Box>
             <Divider sx={{ mb: 1 }} />
-            <Fade in={true}>
+            <Box 
+              onMouseEnter={() => setUrlHovered(true)}
+              onMouseLeave={() => setUrlHovered(false)}
+              sx={{
+                position: 'relative',
+                borderRadius: 1,
+                overflow: 'hidden', // Prevent content from causing container to resize
+                transition: 'all 0.25s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: theme.shadows[2]
+                }
+              }}
+            >
               <Box 
                 sx={{ 
-                  maxHeight: '80px', 
-                  overflowY: 'auto',
+                  height: urlHovered ? 'auto' : '40px', // Fixed height when not hovered
                   backgroundColor: theme.palette.mode === 'dark' 
                     ? 'rgba(255, 255, 255, 0.05)' 
                     : theme.palette.grey[100],
-                  p: 1,
+                  p: 1.5,
                   borderRadius: 1,
+                  transition: theme.transitions.create(['background-color', 'height'], {
+                    duration: '0.3s',
+                    easing: theme.transitions.easing.easeInOut,
+                  }),
                   '&:hover': {
                     backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.08)' 
+                      ? 'rgba(255, 255, 255, 0.1)' 
                       : theme.palette.grey[200]
                   }
                 }}
               >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontFamily: 'monospace',
-                    whiteSpace: 'nowrap',
-                    display: 'block',
-                    width: '100%',
-                    wordBreak: 'break-all'
+                {/* Always render both views, but hide one with opacity */}
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    opacity: urlHovered ? 0 : 1,
+                    height: urlHovered ? 0 : '24px',
+                    overflow: 'hidden',
+                    transition: 'all 0.2s ease-in-out',
                   }}
                 >
-                  {generatedUrl}
-                </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontFamily: 'monospace',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '90%'
+                    }}
+                  >
+                    {generatedUrl}
+                  </Typography>
+                  <OpenInNew fontSize="small" color="action" sx={{ opacity: 0.6, ml: 1 }} />
+                </Box>
+                
+                {/* Expanded view - always in DOM but conditionally shown */}
+                <motion.div
+                  initial={false}
+                  animate={{ 
+                    opacity: urlHovered ? 1 : 0,
+                    height: urlHovered ? 'auto' : 0
+                  }}
+                  transition={{ 
+                    duration: 0.25,
+                    ease: "easeInOut"
+                  }}
+                  style={{ 
+                    overflow: 'hidden', 
+                    transformOrigin: 'top'
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontFamily: 'monospace',
+                      display: 'block',
+                      width: '100%',
+                      wordBreak: 'break-all',
+                      pt: urlHovered ? 0.5 : 0
+                    }}
+                  >
+                    {generatedUrl}
+                  </Typography>
+                </motion.div>
               </Box>
-            </Fade>
+            </Box>
           </Paper>
           
           {/* Country Selector first for better user flow */}
