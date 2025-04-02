@@ -6,7 +6,7 @@ import {
   IconButton 
 } from '@mui/material';
 import { ZoomIn, ZoomOut } from '@mui/icons-material';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 interface ZoomControlsProps {
   zoomLevel: number;
@@ -15,7 +15,7 @@ interface ZoomControlsProps {
   onZoomOut: () => void;
 }
 
-export const ZoomControls: React.FC<ZoomControlsProps> = ({
+export const ZoomControls = React.memo<ZoomControlsProps>(({
   zoomLevel,
   onZoomChange,
   onZoomIn,
@@ -54,4 +54,6 @@ export const ZoomControls: React.FC<ZoomControlsProps> = ({
       </Stack>
     </Paper>
   );
-};
+});
+
+ZoomControls.displayName = 'ZoomControls';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 export interface UseZoomControlsReturn {
   zoomLevel: number;
@@ -13,25 +13,22 @@ export const useZoomControls = (): UseZoomControlsReturn => {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [showZoomControls, setShowZoomControls] = useState<boolean>(false);
 
-  // Handle zoom change from slider
-  const handleZoomChange = (_event: Event, newValue: number | number[]) => {
+  // Memoize zoom handlers to prevent unnecessary rerenders
+  const handleZoomChange = useCallback((_event: Event, newValue: number | number[]) => {
     setZoomLevel(newValue as number);
-  };
+  }, []);
 
-  // Handle zoom in
-  const handleZoomIn = () => {
+  const handleZoomIn = useCallback(() => {
     setZoomLevel(prev => Math.min(prev + 10, 200));
-  };
+  }, []);
 
-  // Handle zoom out
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoomLevel(prev => Math.max(prev - 10, 50));
-  };
+  }, []);
 
-  // Toggle zoom controls visibility
-  const toggleZoomControls = () => {
+  const toggleZoomControls = useCallback(() => {
     setShowZoomControls(prev => !prev);
-  };
+  }, []);
 
   return {
     zoomLevel,

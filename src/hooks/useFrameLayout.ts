@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, RefObject } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, RefObject } from 'react';
 import { FrameConfig } from './useMultiboxTester';
 
 // Constants
@@ -50,24 +50,26 @@ export interface UseFrameLayoutReturn {
   setSnapToGrid: (snap: boolean) => void;
 }
 
-const getCursorStyleForDirection = (direction: string): string => {
-  const cursorStyles: Record<string, string> = {
-    n: 'ns-resize',
-    s: 'ns-resize',
-    e: 'ew-resize',
-    w: 'ew-resize',
-    ne: 'nesw-resize',
-    nw: 'nwse-resize',
-    se: 'nwse-resize',
-    sw: 'nesw-resize'
-  };
-
-  return cursorStyles[direction] || 'default';
-};
-
 // Helper function to snap position to grid
 const snapToGridValue = (value: number, gridSize: number): number => {
   return Math.round(value / gridSize) * gridSize;
+};
+
+// Memoize cursor styles to avoid recreating this object on each render
+const CURSOR_STYLES: Record<string, string> = {
+  n: 'ns-resize',
+  s: 'ns-resize',
+  e: 'ew-resize',
+  w: 'ew-resize',
+  ne: 'nesw-resize',
+  nw: 'nwse-resize',
+  se: 'nwse-resize',
+  sw: 'nesw-resize'
+};
+
+// Get cursor style for resize direction
+const getCursorStyleForDirection = (direction: string): string => {
+  return CURSOR_STYLES[direction] || 'default';
 };
 
 export const useFrameLayout = ({
@@ -92,26 +94,75 @@ export const useFrameLayout = ({
   const resizeHandleRef = useRef<HTMLElement | null>(null);
   const mousePositionRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 });
 
+  // Use a ref to track layout batch updates for better performance
+  const pendingLayoutUpdates = useRef<Record<string, FrameLayout>>({});
+  const layoutUpdateTimeoutRef = useRef<number | null>(null);
+
+  // Batch layout updates for better performance
+  const batchLayoutUpdates = useCallback(() => {
+    if (Object.keys(pendingLayoutUpdates.current).length === 0) return;
+    
+    setFrameLayouts(prev => ({
+      ...prev,
+      ...pendingLayoutUpdates.current
+    }));
+    
+    pendingLayoutUpdates.current = {};
+    layoutUpdateTimeoutRef.current = null;
+  }, []);
+
+  // Schedule layout update with debouncing
+  const scheduleLayoutUpdate = useCallback((frameId: string, layout: Partial<FrameLayout>) => {
+    pendingLayoutUpdates.current[frameId] = {
+      ...(frameLayouts[frameId] || {
+        width: DEFAULT_FRAME_SIZE,
+        height: DEFAULT_FRAME_SIZE,
+        maxHeight: false
+      }),
+      ...layout
+    } as FrameLayout;
+    
+    if (layoutUpdateTimeoutRef.current !== null) {
+      window.cancelAnimationFrame(layoutUpdateTimeoutRef.current);
+    }
+    
+    layoutUpdateTimeoutRef.current = window.requestAnimationFrame(batchLayoutUpdates);
+  }, [frameLayouts, batchLayoutUpdates]);
+
+  // Clean up any pending animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (layoutUpdateTimeoutRef.current !== null) {
+        window.cancelAnimationFrame(layoutUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Adjust container size to fit all frames
   useEffect(() => {
     const container = framesContainerRef.current;
     if (!container) return;
 
-    let maxRight = 0;
-    let maxBottom = 0;
+    // Use requestAnimationFrame for layout calculations
+    const rafId = requestAnimationFrame(() => {
+      let maxRight = 0;
+      let maxBottom = 0;
 
-    frames.forEach(frame => {
-      const layout = frameLayouts[frame.id];
-      const position = layout?.position || frame.position || { x: 0, y: 0 };
+      frames.forEach(frame => {
+        const layout = frameLayouts[frame.id];
+        const position = layout?.position || frame.position || { x: 0, y: 0 };
 
-      if (layout) {
-        maxRight = Math.max(maxRight, position.x + layout.width);
-        maxBottom = Math.max(maxBottom, position.y + layout.height);
-      }
+        if (layout) {
+          maxRight = Math.max(maxRight, position.x + layout.width);
+          maxBottom = Math.max(maxBottom, position.y + layout.height);
+        }
+      });
+
+      container.style.minWidth = `${maxRight + CONTAINER_PADDING}px`;
+      container.style.minHeight = `${maxBottom + CONTAINER_PADDING}px`;
     });
 
-    container.style.minWidth = `${maxRight + CONTAINER_PADDING}px`;
-    container.style.minHeight = `${maxBottom + CONTAINER_PADDING}px`;
+    return () => cancelAnimationFrame(rafId);
   }, [frames, frameLayouts]);
 
   // Initialize new frames with default layout
@@ -134,28 +185,38 @@ export const useFrameLayout = ({
     }
   }, [frames, frameLayouts]);
 
-  // Sync positions back to the parent hook
+  // Sync positions back to the parent hook using a debounced update
+  // to avoid excessive state updates during dragging or resizing
   useEffect(() => {
     if (draggingFrame || resizingFrameId) return;
+    
+    let syncTimeout: number | null = null;
+    
+    const syncPositions = () => {
+      Object.entries(frameLayouts).forEach(([frameId, layout]) => {
+        if (!layout.position) return;
 
-    Object.entries(frameLayouts).forEach(([frameId, layout]) => {
-      if (!layout.position) return;
+        const frame = frames.find(f => f.id === frameId);
+        if (!frame) return;
 
-      const frame = frames.find(f => f.id === frameId);
-      if (!frame) return;
+        const framePos = frame.position;
+        const layoutPos = layout.position;
 
-      const framePos = frame.position;
-      const layoutPos = layout.position;
-
-      if (framePos?.x !== layoutPos.x || framePos?.y !== layoutPos.y) {
-        onUpdateFramePosition(frameId, layoutPos);
-      }
-    });
+        if (framePos?.x !== layoutPos.x || framePos?.y !== layoutPos.y) {
+          onUpdateFramePosition(frameId, layoutPos);
+        }
+      });
+    };
+    
+    syncTimeout = window.setTimeout(syncPositions, 100);
+    
+    return () => {
+      if (syncTimeout) window.clearTimeout(syncTimeout);
+    };
   }, [frameLayouts, draggingFrame, resizingFrameId, frames, onUpdateFramePosition]);
 
   // Helper function for setting up auto-scroll
-  // when dragging or resizing frames
-  const setupAutoScroll = (
+  const setupAutoScroll = useCallback((
     isActive: RefObject<boolean>,
     getScrollDirections: () => { horizontal: number, vertical: number }
   ) => {
@@ -195,10 +256,10 @@ export const useFrameLayout = ({
     };
 
     return { startAutoScroll, clearAutoScroll };
-  };
+  }, []);
 
-  // Helper to expand container if needed
-  const expandContainerIfNeeded = (x: number, y: number, width: number, height: number) => {
+  // Helper to expand container if needed - memoized to avoid recreation
+  const expandContainerIfNeeded = useCallback((x: number, y: number, width: number, height: number) => {
     const container = framesContainerRef.current;
     if (!container) return;
 
@@ -215,28 +276,28 @@ export const useFrameLayout = ({
     if (requiredHeight > currentHeight) {
       container.style.minHeight = `${requiredHeight}px`;
     }
-  };
+  }, []);
 
   // Helper function to snap position to grid if enabled
-  const maybeSnapToGrid = (position: { x: number, y: number }): { x: number, y: number } => {
+  const maybeSnapToGrid = useCallback((position: { x: number, y: number }): { x: number, y: number } => {
     if (!snapToGrid) return position;
     return {
       x: snapToGridValue(position.x, GRID_SIZE),
       y: snapToGridValue(position.y, GRID_SIZE)
     };
-  };
+  }, [snapToGrid]);
 
   // Helper function to snap dimensions to grid if enabled
-  const maybeSnapDimensions = (dimensions: { width: number, height: number }): { width: number, height: number } => {
+  const maybeSnapDimensions = useCallback((dimensions: { width: number, height: number }): { width: number, height: number } => {
     if (!snapToGrid) return dimensions;
     return {
       width: Math.max(MIN_FRAME_WIDTH, snapToGridValue(dimensions.width, GRID_SIZE)),
       height: Math.max(MIN_FRAME_HEIGHT, snapToGridValue(dimensions.height, GRID_SIZE))
     };
-  };
+  }, [snapToGrid]);
 
-  // Frame drag handler
-  const handleFrameMoveStart = (e: React.MouseEvent, frameId: string) => {
+  // Frame drag handler - optimized with debounced updates
+  const handleFrameMoveStart = useCallback((e: React.MouseEvent, frameId: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -268,13 +329,10 @@ export const useFrameLayout = ({
 
     const startPosition = frameLayout.position || { x: startLeft, y: startTop };
 
-    setFrameLayouts(prev => ({
-      ...prev,
-      [frameId]: {
-        ...(prev[frameId] || frameLayout),
-        position: startPosition
-      }
-    }));
+    // Initial update without debouncing
+    scheduleLayoutUpdate(frameId, {
+      position: startPosition
+    });
 
     onMarkFrameAsCustomSized(frameId);
 
@@ -282,6 +340,10 @@ export const useFrameLayout = ({
 
     originalCursorRef.current = document.body.style.cursor;
     document.body.style.cursor = 'grabbing';
+
+    // Track the last time we updated the position
+    let lastPositionUpdate = performance.now();
+    let lastPosition = { x: startPosition.x, y: startPosition.y };
 
     const getScrollDirections = () => {
       const scrollContainer = container.parentElement;
@@ -325,13 +387,19 @@ export const useFrameLayout = ({
       newX = snappedPosition.x;
       newY = snappedPosition.y;
 
-      setFrameLayouts(prev => ({
-        ...prev,
-        [frameId]: {
-          ...prev[frameId],
+      // Use debounced updates for better performance
+      const now = performance.now();
+      if (now - lastPositionUpdate > 16 || 
+          Math.abs(newX - lastPosition.x) > 10 || 
+          Math.abs(newY - lastPosition.y) > 10) {
+        
+        scheduleLayoutUpdate(frameId, {
           position: { x: newX, y: newY }
-        }
-      }));
+        });
+        
+        lastPositionUpdate = now;
+        lastPosition = { x: newX, y: newY };
+      }
 
       const scrollContainer = container.parentElement;
       if (scrollContainer) {
@@ -358,10 +426,11 @@ export const useFrameLayout = ({
       setDraggingFrame(false);
       setActiveFrameId(null);
 
-      const finalPos = frameLayouts[frameId]?.position;
-      if (finalPos) {
-        onUpdateFramePosition(frameId, finalPos);
-      }
+      // Force any pending layout updates to be applied
+      batchLayoutUpdates();
+
+      const finalPos = frameLayouts[frameId]?.position || lastPosition;
+      onUpdateFramePosition(frameId, finalPos);
 
       clearAutoScroll();
       document.body.style.cursor = originalCursorRef.current;
@@ -374,10 +443,19 @@ export const useFrameLayout = ({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseleave', handleMouseUp);
-  };
+  }, [
+    frameLayouts, 
+    maybeSnapToGrid, 
+    setupAutoScroll, 
+    expandContainerIfNeeded, 
+    scheduleLayoutUpdate,
+    batchLayoutUpdates,
+    onMarkFrameAsCustomSized, 
+    onUpdateFramePosition
+  ]);
 
-  // Frame resize handler
-  const handleMultiDirectionResize = (e: React.MouseEvent, frameId: string, direction: string) => {
+  // Frame resize handler - optimized with debounced updates
+  const handleMultiDirectionResize = useCallback((e: React.MouseEvent, frameId: string, direction: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -415,6 +493,15 @@ export const useFrameLayout = ({
 
     let accumulatedMovementX = 0;
     let accumulatedMovementY = 0;
+    
+    // Track the last time we updated the position
+    let lastResizeUpdate = performance.now();
+    let lastDimensions = { 
+      x: startPosition.x, 
+      y: startPosition.y, 
+      width: startWidth, 
+      height: startHeight 
+    };
 
     const getScrollDirections = () => {
       const scrollContainer = container.parentElement;
@@ -498,16 +585,24 @@ export const useFrameLayout = ({
 
       const { x: newX, y: newY, width: newWidth, height: newHeight } = calculateNewDimensions();
 
-      setFrameLayouts(prev => ({
-        ...prev,
-        [frameId]: {
-          ...prev[frameId],
+      // Use debounced updates for better performance during resize
+      const now = performance.now();
+      if (now - lastResizeUpdate > 16 || 
+          Math.abs(newWidth - lastDimensions.width) > 5 || 
+          Math.abs(newHeight - lastDimensions.height) > 5 ||
+          Math.abs(newX - lastDimensions.x) > 5 || 
+          Math.abs(newY - lastDimensions.y) > 5) {
+        
+        scheduleLayoutUpdate(frameId, {
           width: newWidth,
           height: newHeight,
           position: { x: newX, y: newY },
           maxHeight: false,
-        }
-      }));
+        });
+        
+        lastResizeUpdate = now;
+        lastDimensions = { x: newX, y: newY, width: newWidth, height: newHeight };
+      }
 
       startAutoScroll();
       expandContainerIfNeeded(newX, newY, newWidth, newHeight);
@@ -519,6 +614,9 @@ export const useFrameLayout = ({
       if (document.pointerLockElement === resizeHandleRef.current) {
         document.exitPointerLock();
       }
+
+      // Force any pending layout updates to be applied
+      batchLayoutUpdates();
 
       const finalLayout = frameLayouts[frameId];
       if (finalLayout?.position) {
@@ -555,9 +653,21 @@ export const useFrameLayout = ({
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseleave', handleMouseLeave);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
-  };
+  }, [
+    frameLayouts, 
+    maybeSnapToGrid, 
+    maybeSnapDimensions, 
+    setupAutoScroll,
+    expandContainerIfNeeded,
+    scheduleLayoutUpdate,
+    batchLayoutUpdates,
+    onMarkFrameAsCustomSized,
+    onUpdateFramePosition,
+    snapToGrid
+  ]);
 
-  const toggleMaximizeHeight = (frameId: string) => {
+  // Toggle frame height maximization - memoized for performance
+  const toggleMaximizeHeight = useCallback((frameId: string) => {
     setFrameLayouts(prev => {
       const currentLayout = prev[frameId];
       if (!currentLayout) return prev;
@@ -576,9 +686,10 @@ export const useFrameLayout = ({
 
       return { ...prev, [frameId]: newLayout };
     });
-  };
+  }, [onMarkFrameAsCustomSized, onUpdateFramePosition]);
 
-  const resetFrameSize = (frameId: string, defaultWidth: number = DEFAULT_FRAME_SIZE) => {
+  // Reset frame size - memoized for performance
+  const resetFrameSize = useCallback((frameId: string, defaultWidth: number = DEFAULT_FRAME_SIZE) => {
     setFrameLayouts(prev => {
       const position = prev[frameId]?.position;
       return {
@@ -591,9 +702,10 @@ export const useFrameLayout = ({
         }
       };
     });
-  };
+  }, []);
 
-  const toggleConfigPanel = (frameId: string) => {
+  // Toggle config panel expansion - memoized for performance
+  const toggleConfigPanel = useCallback((frameId: string) => {
     setExpandedConfigFrames(prev => {
       const newSet = new Set(prev);
       if (newSet.has(frameId)) {
@@ -603,7 +715,7 @@ export const useFrameLayout = ({
       }
       return newSet;
     });
-  };
+  }, []);
 
   return {
     frameLayouts,

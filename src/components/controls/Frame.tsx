@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { 
   Box, 
   Card, 
@@ -26,16 +26,6 @@ import { ResizeHandles } from './ResizeHandles';
 import FloatingConfigMenu from './FloatingConfigMenu';
 
 interface FrameProps {
-  frame: FrameConfig;
-  layout: FrameLayout;
-  isActive: boolean;
-  isDragging: boolean;
-  isResizing: boolean;
-  isDraggedOver: boolean;
-  isConfigExpanded: boolean;
-  globalSyncEnabled: boolean;
-  onMove: (e: React.MouseEvent, frameId: string) => void;
-  onResize: (e: React.MouseEvent, frameId: string, direction: string) => void;
   onRemove: (frameId: string) => void;
   onCopyUrl: (url: string) => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>, frameId: string) => void;
@@ -45,9 +35,19 @@ interface FrameProps {
   onChangeCountry: (frameId: string, code: string) => void;
   onShowNotification: (message: string) => void;
   frameRef: React.RefObject<HTMLDivElement>;
+  frame: FrameConfig;
+  layout: FrameLayout;  
+  isActive?: boolean;
+  isDragging?: boolean;
+  isResizing?: boolean;
+  isDraggedOver?: boolean;
+  isConfigExpanded?: boolean;
+  globalSyncEnabled: boolean;
+  onMove: (e: React.MouseEvent<HTMLElement>, frameId: string) => void;
+  onResize: (e: React.MouseEvent<Element>, frameId: string, direction: string) => void;
 }
 
-export const Frame: React.FC<FrameProps> = ({ 
+export const Frame = memo<FrameProps>(({ 
   frame, 
   layout,
   isDragging,
@@ -66,23 +66,35 @@ export const Frame: React.FC<FrameProps> = ({
 }) => {
   const theme = useTheme();
 
+  // Memoize complex styles to prevent recalculations
+  const cardStyle = useMemo(() => ({ 
+    height: layout.height || 400,
+    display: 'flex',
+    flexDirection: 'column',
+    borderRadius: 2,
+    overflow: 'hidden',
+    transition: (isResizing || isDragging) 
+      ? 'none' 
+      : theme.transitions.create(['box-shadow']),
+    '&:hover': {
+      boxShadow: theme.shadows[6]
+    },
+    position: 'relative',
+  }), [layout.height, isResizing, isDragging, theme]);
+
+  const headerStyle = useMemo(() => ({ 
+    p: 1.5,
+    bgcolor: theme.palette.mode === 'dark' 
+      ? 'rgba(66, 66, 66, 0.2)' 
+      : 'rgba(248, 248, 248, 0.8)',
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    cursor: 'move'
+  }), [theme]);
+
   return (
     <Card 
       elevation={3} 
-      sx={{ 
-        height: layout.height || 400,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: 2,
-        overflow: 'hidden',
-        transition: (isResizing || isDragging) 
-          ? 'none' 
-          : theme.transitions.create(['box-shadow']),
-        '&:hover': {
-          boxShadow: theme.shadows[6]
-        },
-        position: 'relative',
-      }}
+      sx={cardStyle}
     >
       <CardHeader
         title={
@@ -144,14 +156,7 @@ export const Frame: React.FC<FrameProps> = ({
             </Tooltip>
           </Stack>
         }
-        sx={{ 
-          p: 1.5,
-          bgcolor: theme.palette.mode === 'dark' 
-            ? 'rgba(66, 66, 66, 0.2)' 
-            : 'rgba(248, 248, 248, 0.8)',
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          cursor: 'move'
-        }}
+        sx={headerStyle}
       />
       
       {/* Iframe container - Now takes up the full available space */}
@@ -214,4 +219,6 @@ export const Frame: React.FC<FrameProps> = ({
       <ResizeHandles frameId={frame.id} onResize={onResize} />
     </Card>
   );
-};
+});
+
+Frame.displayName = 'Frame';
