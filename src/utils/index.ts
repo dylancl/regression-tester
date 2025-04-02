@@ -227,7 +227,12 @@ export const createUrlWithParams = (
   }
   
   const queryString = buildQueryString(queryParams);
-  return `${removeLastSlashAndWhitespace(window.location.origin)}?${queryString}`;
+  
+  // Get the base path from Vite environment
+  const basePath = import.meta.env.BASE_URL || '/';
+  
+  // Create URL with the base path included
+  return `${removeLastSlashAndWhitespace(window.location.origin)}${basePath}?${queryString}`;
 };
 
 /**
