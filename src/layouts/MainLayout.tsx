@@ -1,9 +1,8 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Box, AppBar, Toolbar, Typography, Container, styled, Button, Stack, useTheme } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, Container, styled, Button, Stack } from '@mui/material';
 import { Fullscreen, Dashboard } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useThemeContext } from '../contexts/ThemeContext';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
@@ -28,8 +27,7 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const location = useLocation();
-  const theme = useTheme();
-  const { mode } = useThemeContext();
+
   
   const isMultibox = location.pathname === '/multibox';
 
