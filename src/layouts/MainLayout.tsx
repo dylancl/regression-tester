@@ -38,7 +38,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <StyledAppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Toyota Regression Tester 
+            USC Component Regression Tester 
             {isMultibox ? '- Multibox' : 
              isEnvironmentsPage ? '- Environments' : 
              isCountriesPage ? '- Countries & NMSCs' : ''}
