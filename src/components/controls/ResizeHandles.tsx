@@ -13,15 +13,19 @@ const resizeHandleStyles = {
   transition: 'background-color 0.2s ease',
 };
 
-// Style for handle grabber indicators
+// Enhanced handle grabber style with outline and better visibility 
 const handleGrabberStyle = {
-  width: 8,
-  height: 8,
+  width: 10, // Slightly larger
+  height: 10, // Slightly larger
   borderRadius: '50%',
   backgroundColor: 'currentColor',
-  transition: 'transform 0.2s ease, background-color 0.2s ease',
+  transition: 'transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease',
+  // Add a subtle outline to improve visibility against all backgrounds
+  boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)',
+  // Enhance hover effect
   '&:hover': {
     transform: 'scale(1.5)',
+    boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.5)',
   },
 };
 
@@ -32,15 +36,29 @@ interface ResizeHandlesProps {
 
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ frameId, onResize }) => {
   const theme = useTheme();
+  // Use a more prominent color for handles to improve visibility
   const handleColor = theme.palette.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.5)' 
-    : 'rgba(0, 0, 0, 0.3)';
+    ? 'rgba(255, 255, 255, 0.7)' 
+    : 'rgba(0, 0, 0, 0.5)';
   
   // Common styles for all handles
   const commonStyles = {
     color: handleColor,
+    // Add a subtle background to make the clickable area more apparent
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      borderRadius: '50%',
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      zIndex: -1,
+    },
     '&:hover': {
       color: theme.palette.primary.main,
+      '&::before': {
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      }
     },
   };
 

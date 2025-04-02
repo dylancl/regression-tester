@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://dylan.cathelijn.github.io/regressiontester/",
+  "homepage": "https://dylancl.github.io/regression-tester/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -37,6 +37,24 @@ export interface UseFrameLayoutReturn {
   setDragOverFrameId: (frameId: string | null) => void;
 }
 
+// Helper to get cursor style based on resize direction
+const getCursorStyleForDirection = (direction: string): string => {
+  switch (direction) {
+    case 'n': return 'ns-resize';
+    case 's': return 'ns-resize';
+    case 'e': return 'ew-resize';
+    case 'w': return 'ew-resize';
+    case 'ne': return 'nesw-resize';
+    case 'nw': return 'nwse-resize';
+    case 'se': return 'nwse-resize';
+    case 'sw': return 'nesw-resize';
+    default: return 'default';
+  }
+};
+
+// Padding to automatically add when frames approach container edges
+const CONTAINER_PADDING = 200;
+
 export const useFrameLayout = ({
   frames,
   onUpdateFramePosition,
@@ -54,6 +72,12 @@ export const useFrameLayout = ({
   // Fix type issue by using proper RefObject type
   const framesContainerRef = useRef<HTMLDivElement>(null);
   const frameRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  
+  // Store original cursor style to restore when done resizing
+  const originalCursorRef = useRef<string>('');
+  
+  // Reference to the resize handle element for pointer lock
+  const resizeHandleRef = useRef<HTMLElement | null>(null);
   
   // Adjust container size to accommodate all frames
   useEffect(() => {
@@ -76,9 +100,9 @@ export const useFrameLayout = ({
       }
     });
     
-    // Set minimum container dimensions
-    framesContainerRef.current.style.minWidth = `${maxRight + 100}px`;
-    framesContainerRef.current.style.minHeight = `${maxBottom + 100}px`;
+    // Set minimum container dimensions with extra padding
+    framesContainerRef.current.style.minWidth = `${maxRight + CONTAINER_PADDING}px`;
+    framesContainerRef.current.style.minHeight = `${maxBottom + CONTAINER_PADDING}px`;
   }, [frames, frameLayouts]);
 
   // Initialize frame layouts when frames change
@@ -171,6 +195,12 @@ export const useFrameLayout = ({
     let scrollInterval: number | null = null;
     let isMouseDown = true;
     
+    // Store original cursor
+    originalCursorRef.current = document.body.style.cursor;
+    
+    // Set cursor for dragging
+    document.body.style.cursor = 'grabbing';
+    
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!isMouseDown) return;
       
@@ -241,6 +271,27 @@ export const useFrameLayout = ({
           }, 16);
         }
       }
+      
+      // Check if we need to expand the container
+      if (framesContainerRef.current) {
+        const currentWidth = parseInt(framesContainerRef.current.style.minWidth || '0', 10);
+        const currentHeight = parseInt(framesContainerRef.current.style.minHeight || '0', 10);
+        
+        const frameWidth = frameLayouts[frameId]?.width || 400;
+        const frameHeight = frameLayouts[frameId]?.height || 400;
+        
+        const requiredWidth = newX + frameWidth + CONTAINER_PADDING;
+        const requiredHeight = newY + frameHeight + CONTAINER_PADDING;
+        
+        // Expand container if needed
+        if (requiredWidth > currentWidth) {
+          framesContainerRef.current.style.minWidth = `${requiredWidth}px`;
+        }
+        
+        if (requiredHeight > currentHeight) {
+          framesContainerRef.current.style.minHeight = `${requiredHeight}px`;
+        }
+      }
     };
     
     const handleMouseUp = () => {
@@ -260,6 +311,9 @@ export const useFrameLayout = ({
         scrollInterval = null;
       }
       
+      // Restore cursor
+      document.body.style.cursor = originalCursorRef.current;
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('mouseleave', handleMouseUp);
@@ -270,7 +324,7 @@ export const useFrameLayout = ({
     document.addEventListener('mouseleave', handleMouseUp);
   };
 
-  // Handle resize from all directions
+  // Handle resize from all directions with locked pointer
   const handleMultiDirectionResize = (e: React.MouseEvent, frameId: string, direction: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -281,6 +335,9 @@ export const useFrameLayout = ({
     
     const frameElement = frameRefs.current[frameId];
     if (!frameElement || !framesContainerRef.current) return;
+    
+    // Store the resize handle element for pointer lock
+    resizeHandleRef.current = e.target as HTMLElement;
     
     const frameRect = frameElement.getBoundingClientRect();
     const containerRect = framesContainerRef.current.getBoundingClientRect();
@@ -301,15 +358,38 @@ export const useFrameLayout = ({
     let scrollInterval: number | null = null;
     let isResizing = true;
     
+    // Store original cursor
+    originalCursorRef.current = document.body.style.cursor;
+    
+    // Set cursor based on resize direction
+    const cursorStyle = getCursorStyleForDirection(direction);
+    document.body.style.cursor = cursorStyle;
+    
+    // Lock the pointer to the resize handle
+    if (resizeHandleRef.current) {
+      resizeHandleRef.current.requestPointerLock();
+    }
+    
+    // Track movement for locked pointer
+    let accumulatedMovementX = 0;
+    let accumulatedMovementY = 0;
+    
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!isResizing) return;
       
       moveEvent.preventDefault();
       moveEvent.stopPropagation();
       
-      // Calculate deltas from the start position for consistent resizing
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
+      // When pointer is locked, use movementX and movementY instead of absolute coordinates
+      if (document.pointerLockElement === resizeHandleRef.current) {
+        // Accumulate movements
+        accumulatedMovementX += moveEvent.movementX;
+        accumulatedMovementY += moveEvent.movementY;
+      } else {
+        // Fallback to regular coordinates if pointer lock fails
+        accumulatedMovementX = moveEvent.clientX - startX;
+        accumulatedMovementY = moveEvent.clientY - startY;
+      }
       
       // Calculate new dimensions based on resize direction
       let newWidth = startWidth;
@@ -319,18 +399,18 @@ export const useFrameLayout = ({
       
       // Handle resizing logic for different directions
       if (direction.includes('e')) { // Right edge
-        newWidth = Math.max(300, startWidth + deltaX);
+        newWidth = Math.max(300, startWidth + accumulatedMovementX);
       }
       if (direction.includes('w')) { // Left edge
-        const width = Math.max(300, startWidth - deltaX);
+        const width = Math.max(300, startWidth - accumulatedMovementX);
         newWidth = width;
         newX = startPosition.x + (startWidth - width);
       }
       if (direction.includes('s')) { // Bottom edge
-        newHeight = Math.max(200, startHeight + deltaY);
+        newHeight = Math.max(200, startHeight + accumulatedMovementY);
       }
       if (direction.includes('n')) { // Top edge
-        const height = Math.max(200, startHeight - deltaY);
+        const height = Math.max(200, startHeight - accumulatedMovementY);
         newHeight = height;
         newY = startPosition.y + (startHeight - height);
       }
@@ -347,12 +427,35 @@ export const useFrameLayout = ({
         }
       }));
       
-      // Auto-scrolling logic 
+      // Auto-scrolling logic with locked pointer
       const scrollContainer = framesContainerRef.current?.parentElement;
       if (scrollContainer) {
-        const containerRect = scrollContainer.getBoundingClientRect();
-        const scrollThreshold = 50;
-        const scrollSpeed = 15;
+        // With pointer lock, we need to determine scroll direction based on position
+        // and size changes, not mouse position
+        let needToScrollRight = false;
+        let needToScrollLeft = false;
+        let needToScrollDown = false;
+        let needToScrollUp = false;
+        
+        // Right edge reaches view border
+        if (direction.includes('e') && newX + newWidth > scrollContainer.scrollLeft + scrollContainer.clientWidth - 50) {
+          needToScrollRight = true;
+        }
+        
+        // Left edge reaches view border
+        if (direction.includes('w') && newX < scrollContainer.scrollLeft + 50) {
+          needToScrollLeft = true;
+        }
+        
+        // Bottom edge reaches view border
+        if (direction.includes('s') && newY + newHeight > scrollContainer.scrollTop + scrollContainer.clientHeight - 50) {
+          needToScrollDown = true;
+        }
+        
+        // Top edge reaches view border
+        if (direction.includes('n') && newY < scrollContainer.scrollTop + 50) {
+          needToScrollUp = true;
+        }
         
         // Clear any existing scroll interval
         if (scrollInterval) {
@@ -360,37 +463,79 @@ export const useFrameLayout = ({
           scrollInterval = null;
         }
         
-        // Check if we need to scroll
-        const needsHorizontalScroll = 
-          moveEvent.clientX > containerRect.right - scrollThreshold || 
-          moveEvent.clientX < containerRect.left + scrollThreshold;
-          
-        const needsVerticalScroll = 
-          moveEvent.clientY > containerRect.bottom - scrollThreshold || 
-          moveEvent.clientY < containerRect.top + scrollThreshold;
-      
-        if (needsHorizontalScroll || needsVerticalScroll) {
+        if (needToScrollRight || needToScrollLeft || needToScrollDown || needToScrollUp) {
+          const scrollSpeed = 15;
           scrollInterval = window.setInterval(() => {
             // Horizontal scrolling
-            if (moveEvent.clientX > containerRect.right - scrollThreshold) {
+            if (needToScrollRight) {
               scrollContainer.scrollLeft += scrollSpeed;
-            } else if (moveEvent.clientX < containerRect.left + scrollThreshold) {
+            } else if (needToScrollLeft) {
               scrollContainer.scrollLeft -= scrollSpeed;
             }
             
             // Vertical scrolling
-            if (moveEvent.clientY > containerRect.bottom - scrollThreshold) {
+            if (needToScrollDown) {
               scrollContainer.scrollTop += scrollSpeed;
-            } else if (moveEvent.clientY < containerRect.top + scrollThreshold) {
+            } else if (needToScrollUp) {
               scrollContainer.scrollTop -= scrollSpeed;
             }
           }, 16);
+        }
+      }
+      
+      // Check if we need to expand the container
+      if (framesContainerRef.current) {
+        const currentWidth = parseInt(framesContainerRef.current.style.minWidth || '0', 10);
+        const currentHeight = parseInt(framesContainerRef.current.style.minHeight || '0', 10);
+        
+        const requiredWidth = newX + newWidth + CONTAINER_PADDING;
+        const requiredHeight = newY + newHeight + CONTAINER_PADDING;
+        
+        // Expand container dynamically if needed
+        if (requiredWidth > currentWidth) {
+          framesContainerRef.current.style.minWidth = `${requiredWidth}px`;
+        }
+        
+        if (requiredHeight > currentHeight) {
+          framesContainerRef.current.style.minHeight = `${requiredHeight}px`;
         }
       }
     };
     
     const handleMouseUp = () => {
       isResizing = false;
+      
+      // Get the current position of the resize handle before releasing pointer lock
+      let handleRect: DOMRect | null = null;
+      
+      if (resizeHandleRef.current) {
+        handleRect = resizeHandleRef.current.getBoundingClientRect();
+      }
+      
+      // Release pointer lock
+      if (document.pointerLockElement === resizeHandleRef.current) {
+        document.exitPointerLock();
+        
+        // After releasing pointer lock, position the cursor at the handle if we have coordinates
+        if (handleRect) {
+          // Use a slight delay to ensure pointer lock is fully released
+          setTimeout(() => {
+            try {
+              // Position mouse at center of handle
+              const x = handleRect!.left + handleRect!.width / 2;
+              const y = handleRect!.top + handleRect!.height / 2;
+              
+              // Some browsers support moveMouse - but this is non-standard and may not work everywhere
+              if ('moveMouse' in window) {
+                (window as any).moveMouse(x, y);
+              }
+            } catch (e) {
+              // Silently handle any errors - this is just a nice-to-have feature
+              console.warn("Could not move mouse cursor", e);
+            }
+          }, 10);
+        }
+      }
       
       // Get final layout from local state
       const finalLayout = frameLayouts[frameId];
@@ -410,21 +555,34 @@ export const useFrameLayout = ({
         window.clearInterval(scrollInterval);
       }
       
+      // Restore cursor style
+      document.body.style.cursor = originalCursorRef.current;
+      
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
     };
     
-    const handleMouseLeave = () => {
-      // Only handle mouse leave for the document
-      if (event && (event.target as Node)?.nodeName !== 'HTML') {
-        return;
+    const handleMouseLeave = (event: MouseEvent) => {
+      // Only handle mouse leave for the document if pointer isn't locked
+      if (document.pointerLockElement !== resizeHandleRef.current &&
+          event && event.target && (event.target as Node)?.nodeName === 'HTML') {
+        handleMouseUp();
       }
-      handleMouseUp();
+    };
+    
+    const handlePointerLockChange = () => {
+      // If pointer lock is exited unexpectedly, end resizing
+      if (document.pointerLockElement !== resizeHandleRef.current && isResizing) {
+        handleMouseUp();
+      }
     };
     
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
   };
 
   // Toggle maximize frame height
