@@ -6,7 +6,7 @@ import {
   IconButton 
 } from '@mui/material';
 import { ZoomIn, ZoomOut } from '@mui/icons-material';
-import React, { useCallback } from 'react';
+import React from 'react';
 
 interface ZoomControlsProps {
   zoomLevel: number;

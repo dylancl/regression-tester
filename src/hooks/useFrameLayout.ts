@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo, RefObject } from 'react';
+import { useState, useRef, useEffect, useCallback, RefObject } from 'react';
 import { FrameConfig } from './useMultiboxTester';
 
 // Constants
