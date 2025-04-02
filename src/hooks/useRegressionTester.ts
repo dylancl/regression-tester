@@ -33,7 +33,6 @@ export const useRegressionTester = () => {
     const urlParams = parseUrlParams();
 
     if (Object.keys(urlParams).length > 0) {
-      // Create a copy of params that doesn't include country/nmsc
       const { country, nmsc, ...optionParams } = urlParams;
 
       // If country param is present, determine the correct country index
@@ -89,22 +88,20 @@ export const useRegressionTester = () => {
     // Make a copy of the current options
     const newOptions = { ...selectedOptions, [name]: value };
 
-    // Handle incompatible options
     const hasLexus = countryLanguageCodes[countryLanguageCode]?.hasLexus;
     const hasStock = countryLanguageCodes[countryLanguageCode]?.hasStock;
 
-    // Reset brand if Lexus is not available for this country
     if (name === 'brand' && value === 'lexus' && !hasLexus) {
       showNotification('Lexus is not available for this country');
       newOptions.brand = 'toyota';
     }
 
-    // Reset uscContext if Stock is not available for this country
     if (name === 'uscContext' && value === 'stock' && !hasStock) {
       showNotification('Stock Cars is not set up for this country');
       newOptions.uscContext = 'used';
     }
 
+    setIframeLoading(true);    
     setSelectedOptions(newOptions);
     updateBrowserUrl(newOptions);
   };
@@ -117,11 +114,9 @@ export const useRegressionTester = () => {
 
   // Update browser URL with current options
   const updateBrowserUrl = (options: SelectedOptions, countryCode?: string, nmsc?: string) => {
-    // Use the provided country/NMSC or default to current values
     const codeToUse = countryCode || countryLanguageCode;
     const nmscToUse = nmsc || countryLanguageCodes[countryLanguageCode]?.nmsc;
 
-    // Create URL with country and NMSC information
     const newUrl = createUrlWithParams(options, codeToUse, nmscToUse);
     window.history.pushState({}, '', newUrl);
   };

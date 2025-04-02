@@ -48,13 +48,11 @@ export const useMultiboxTester = () => {
 
   // Create a new frame config with proper positioning
   const createFrameConfig = (index: number): FrameConfig => {
-    // Generate a unique ID for the frame
+    // Unique ID for the frame
     const id = `frame-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    
-    // Get default country code
+  
     const defaultCountryCode = Object.keys(countryLanguageCodes)[0];
-    
-    // Generate initial URL
+  
     const initialUrl = generateUrl(defaultOptions, defaultCountryCode);
     
     // Calculate position with significant offset to avoid overlapping
@@ -74,7 +72,6 @@ export const useMultiboxTester = () => {
     };
   };
 
-  // Show notification for 3 seconds
   useEffect(() => {
     if (notification) {
       const timer = setTimeout(() => {
@@ -91,11 +88,10 @@ export const useMultiboxTester = () => {
   const addNewFrame = () => {
     const newFrame = createFrameConfig(frames.length);
     
-    // Add to frames array
     setFrames(current => [...current, newFrame]);
   };
 
-  // Update frame position (called from MultiboxTester)
+  // Update frame position
   const updateFramePosition = (frameId: string, position: { x: number, y: number }) => {
     setFrames(current => 
       current.map(frame => 
@@ -109,10 +105,8 @@ export const useMultiboxTester = () => {
   // Reorder frames when dragged and dropped
   const reorderFrames = (sourceId: string, targetId: string) => {
     setFrames(currentFrames => {
-      // Create a copy of the current frames
       const updatedFrames = [...currentFrames];
       
-      // Find the indices of the source and target frames
       const sourceIndex = updatedFrames.findIndex(frame => frame.id === sourceId);
       const targetIndex = updatedFrames.findIndex(frame => frame.id === targetId);
       
@@ -144,20 +138,17 @@ export const useMultiboxTester = () => {
       current.map(frame => {
         if (frame.id !== frameId) return frame;
         
-        // Make a copy of the current options
         const newOptions = { ...frame.selectedOptions, [name]: value };
         
-        // Handle incompatible options
         const hasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
         const hasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
         
-        // Reset brand if Lexus is not available for this country
+
         if (name === 'brand' && value === 'lexus' && !hasLexus) {
           showNotification('Lexus is not available for this country');
           newOptions.brand = 'toyota';
         }
         
-        // Reset uscContext if Stock is not available for this country
         if (name === 'uscContext' && value === 'stock' && !hasStock) {
           showNotification('Stock Cars is not set up for this country');
           newOptions.uscContext = 'used';

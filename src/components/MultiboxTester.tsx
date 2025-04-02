@@ -1,11 +1,7 @@
 import { 
   Box, 
-  Paper, 
-  Typography, 
   Snackbar, 
   Alert,
-  Button,
-  Stack,
   Fab,
   useMediaQuery,
   MenuItem,
@@ -14,7 +10,6 @@ import {
 } from '@mui/material';
 import { 
   Add, 
-  Dashboard,
   Fullscreen,
   FullscreenExit,
   AspectRatio,
@@ -107,34 +102,6 @@ const MultiboxTester = () => {
       p: 2,
       backgroundColor: theme.palette.background.default
     }}>
-      {/* Header with controls */}
-      <Paper 
-        elevation={2} 
-        sx={{ 
-          p: 2, 
-          mb: 2, 
-          display: 'flex', 
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderRadius: 2
-        }}
-      >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Dashboard color="primary" />
-          <Typography variant="h6" color="primary.main">
-            Multibox Comparison View
-          </Typography>
-        </Stack>
-        <Button 
-          variant="contained" 
-          startIcon={<Add />}
-          onClick={addNewFrame}
-          sx={{ borderRadius: 20 }}
-        >
-          Add Frame
-        </Button>
-      </Paper>
-
       {/* Draggable and resizable frames container - Apply zoom to the entire container */}
       <Box 
         ref={framesContainerRef}
@@ -263,20 +230,35 @@ const MultiboxTester = () => {
         </Alert>
       </Snackbar>
 
-      {/* Zoom toggle button */}
-      <Fab
-        color="primary"
-        size="small"
-        onClick={toggleZoomControls}
-        sx={{ 
-          position: 'fixed', 
-          bottom: 16, 
+      {/* Add Frame button repositioned next to zoom button */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 16,
           right: 16,
           zIndex: 1000,
+          display: 'flex',
+          gap: 2,
         }}
       >
-        <Search />
-      </Fab>
+        <Fab
+          color="primary"
+          size="small"
+          onClick={addNewFrame}
+          sx={{ zIndex: 1000 }}
+        >
+          <Add />
+        </Fab>
+        
+        <Fab
+          color="primary"
+          size="small"
+          onClick={toggleZoomControls}
+          sx={{ zIndex: 1000 }}
+        >
+          <Search />
+        </Fab>
+      </Box>
 
       {/* Zoom controls panel */}
       {showZoomControls && (
