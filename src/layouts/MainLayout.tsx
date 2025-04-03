@@ -1,7 +1,11 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Box, AppBar, Toolbar, Typography, Container, styled, Button, Stack, useMediaQuery, useTheme, IconButton, Menu, MenuItem } from '@mui/material';
-import { Fullscreen, Dashboard, Cloud, Language, Menu as MenuIcon } from '@mui/icons-material';
+import {
+  Fullscreen, Dashboard,
+  // Cloud, 
+  Language, Menu as MenuIcon
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
