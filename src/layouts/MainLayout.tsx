@@ -49,22 +49,22 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
       <StyledAppBar position="static">
         <Toolbar sx={{ flexWrap: 'wrap' }}>
-          <Typography 
-            variant={isMobile ? "subtitle1" : "h6"} 
-            component="div" 
-            sx={{ 
+          <Typography
+            variant={isMobile ? "subtitle1" : "h6"}
+            component="div"
+            sx={{
               flexGrow: 1,
               whiteSpace: isMobile ? 'nowrap' : 'normal',
               overflow: 'hidden',
               textOverflow: 'ellipsis'
             }}
           >
-            {isMobile ? 'USC Tester' : 'USC Component Regression Tester'} 
-            {!isMobile && (isMultibox ? '- Multibox' : 
-             isEnvironmentsPage ? '- Environments' : 
-             isCountriesPage ? '- Countries & NMSCs' : '')}
+            {isMobile ? 'USC Tester' : 'USC Component Regression Tester'}
+            {!isMobile && (isMultibox ? '- Multibox' :
+              isEnvironmentsPage ? '- Environments' :
+                isCountriesPage ? '- Countries & NMSCs' : '')}
           </Typography>
-          
+
           {isMobile ? (
             // Mobile menu button and dropdown
             <>
@@ -89,12 +89,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem 
-                  component={Link} 
+                <MenuItem
+                  component={Link}
                   to="/"
                   onClick={handleMobileMenuClose}
                   selected={isSingleView}
-                  sx={{ 
+                  sx={{
                     color: isSingleView ? theme.palette.primary.main : 'inherit',
                     fontWeight: isSingleView ? 500 : 400
                   }}
@@ -102,12 +102,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   <Fullscreen fontSize="small" sx={{ mr: 1 }} />
                   Single View
                 </MenuItem>
-                <MenuItem 
-                  component={Link} 
+                <MenuItem
+                  component={Link}
                   to="/multibox"
                   onClick={handleMobileMenuClose}
                   selected={isMultibox}
-                  sx={{ 
+                  sx={{
                     color: isMultibox ? theme.palette.primary.main : 'inherit',
                     fontWeight: isMultibox ? 500 : 400
                   }}
@@ -115,12 +115,12 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   <Dashboard fontSize="small" sx={{ mr: 1 }} />
                   Multibox
                 </MenuItem>
-                <MenuItem 
-                  component={Link} 
+                <MenuItem
+                  component={Link}
                   to="/countries"
                   onClick={handleMobileMenuClose}
                   selected={isCountriesPage}
-                  sx={{ 
+                  sx={{
                     color: isCountriesPage ? theme.palette.primary.main : 'inherit',
                     fontWeight: isCountriesPage ? 500 : 400
                   }}
@@ -128,6 +128,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   <Language fontSize="small" sx={{ mr: 1 }} />
                   Countries
                 </MenuItem>
+                {/*
                 <MenuItem 
                   component={Link} 
                   to="/environments"
@@ -141,6 +142,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                   <Cloud fontSize="small" sx={{ mr: 1 }} />
                   Environments
                 </MenuItem>
+                */}
               </Menu>
             </>
           ) : (
@@ -152,7 +154,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                 variant={isSingleView ? "contained" : "text"}
                 color="inherit"
                 startIcon={<Fullscreen />}
-                sx={{ 
+                sx={{
                   bgcolor: isSingleView ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                   '&:hover': {
                     bgcolor: isSingleView ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
@@ -161,14 +163,14 @@ const MainLayout = ({ children }: MainLayoutProps) => {
               >
                 Single View
               </Button>
-              
+
               <Button
                 component={Link}
                 to="/multibox"
                 variant={isMultibox ? "contained" : "text"}
                 color="inherit"
                 startIcon={<Dashboard />}
-                sx={{ 
+                sx={{
                   bgcolor: isMultibox ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                   '&:hover': {
                     bgcolor: isMultibox ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
@@ -177,14 +179,14 @@ const MainLayout = ({ children }: MainLayoutProps) => {
               >
                 Multibox
               </Button>
-              
+
               <Button
                 component={Link}
                 to="/countries"
                 variant={isCountriesPage ? "contained" : "text"}
                 color="inherit"
                 startIcon={<Language />}
-                sx={{ 
+                sx={{
                   bgcolor: isCountriesPage ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                   '&:hover': {
                     bgcolor: isCountriesPage ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
@@ -193,14 +195,14 @@ const MainLayout = ({ children }: MainLayoutProps) => {
               >
                 Countries
               </Button>
-              
-              <Button
+
+              {/* <Button
                 component={Link}
                 to="/environments"
                 variant={isEnvironmentsPage ? "contained" : "text"}
                 color="inherit"
                 startIcon={<Cloud />}
-                sx={{ 
+                sx={{
                   bgcolor: isEnvironmentsPage ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                   '&:hover': {
                     bgcolor: isEnvironmentsPage ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.1)',
@@ -208,7 +210,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
                 }}
               >
                 Environments
-              </Button>
+              </Button> */}
             </Stack>
           )}
         </Toolbar>
