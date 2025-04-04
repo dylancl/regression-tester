@@ -56,16 +56,22 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
     }
   };
 
-  const renderDeviceSection = (category: typeof categories[0], sizes: DeviceSize[]) => (
-    <React.Fragment key={category.id}>
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
+  const generateDeviceSectionItems = (category: typeof categories[0], sizes: DeviceSize[]) => {
+    const items: React.ReactNode[] = [];
+    
+    // Add category header
+    items.push(
+      <MenuItem key={`${category.id}-header`} disabled sx={{ opacity: 0.7 }}>
         <ListItemIcon>
           {category.icon}
         </ListItemIcon>
         <Typography variant="body2" fontWeight="bold">{category.label}</Typography>
       </MenuItem>
-      
-      {sizes.map((size) => (
+    );
+    
+    // Add device size items
+    sizes.forEach(size => {
+      items.push(
         <MenuItem 
           key={`${category.id}-${size.width}-${size.height}`}
           onClick={() => handleMenuItemClick(size.width, size.height)}
@@ -83,11 +89,52 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
             {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
           </Typography>
         </MenuItem>
-      ))}
-      
-      <Divider sx={{ my: 0.5 }} />
-    </React.Fragment>
+      );
+    });
+    
+    // Add divider
+    items.push(<Divider key={`${category.id}-divider`} sx={{ my: 0.5 }} />);
+    
+    return items;
+  };
+
+  // Build all menu items in a flat array
+  const allMenuItems: React.ReactNode[] = [];
+  
+  // Add device category sections
+  categories.forEach(category => {
+    allMenuItems.push(...generateDeviceSectionItems(category, deviceSizesByCategory[category.id]));
+  });
+  
+  // Add custom section
+  allMenuItems.push(
+    <MenuItem key="custom-header" disabled sx={{ opacity: 0.7 }}>
+      <ListItemIcon>
+        <AspectRatio fontSize="small" />
+      </ListItemIcon>
+      <Typography variant="body2" fontWeight="bold">Custom</Typography>
+    </MenuItem>
   );
+  
+  // Add custom sizes
+  customSizes().forEach(({ width, height }) => {
+    allMenuItems.push(
+      <MenuItem 
+        key={`custom-${width}-${height}`}
+        onClick={() => handleMenuItemClick(width, height)}
+        selected={currentWidth === width}
+        sx={{ 
+          pl: 4,
+          minHeight: 36,
+          '&:hover': {
+            backgroundColor: (theme) => theme.palette.action.hover,
+          }
+        }}
+      >
+        <Typography variant="body2">{width}px x {height}px</Typography>
+      </MenuItem>
+    );
+  });
 
   return (
     <Menu
@@ -114,35 +161,7 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
         }
       }}
     >
-      {/* Dynamically render device sections */}
-      {categories.map(category => 
-        renderDeviceSection(category, deviceSizesByCategory[category.id])
-      )}
-
-      {/* Custom Section */}
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
-        <ListItemIcon>
-          <AspectRatio fontSize="small" />
-        </ListItemIcon>
-        <Typography variant="body2" fontWeight="bold">Custom</Typography>
-      </MenuItem>
-      
-      {customSizes().map(({ width, height }) => (
-        <MenuItem 
-          key={`custom-${width}-${height}`}
-          onClick={() => handleMenuItemClick(width, height)}
-          selected={currentWidth === width}
-          sx={{ 
-            pl: 4,
-            minHeight: 36,
-            '&:hover': {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }
-          }}
-        >
-          <Typography variant="body2">{width}px x {height}px</Typography>
-        </MenuItem>
-      ))}
+      {allMenuItems}
     </Menu>
   );
 };

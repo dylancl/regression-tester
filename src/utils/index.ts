@@ -154,7 +154,7 @@ export const countryLanguageCodes: CountryLanguageCodes = {
 /**
  * Remove trailing slash and whitespace from a URL
  */
-export const removeLastSlashAndWhitespace = (url: string): string => 
+export const removeLastSlashAndWhitespace = (url: string): string =>
   url.replace(/\/\s*$/, '');
 
 /**
@@ -170,7 +170,7 @@ export const buildQueryString = (selectedOptions: SelectedOptions): string => {
  * Generate a URL based on the selected options and country language code
  */
 export const generateUrl = (
-  selectedOptions: SelectedOptions, 
+  selectedOptions: SelectedOptions,
   countryLanguageCode: string
 ): string => {
   const {
@@ -201,8 +201,8 @@ export const generateUrl = (
   }
 
   // Modify the URL based on the selected component
-  const restOptions = {...rest};
-  
+  const restOptions = { ...rest };
+
   // For car-filter, we need to use uscContext as carFilter
   if (component === 'car-filter') {
     restOptions.carFilter = restOptions.uscContext;
@@ -222,20 +222,20 @@ export const generateUrl = (
 export const parseUrlParams = (): Record<string, string> => {
   const params = new URLSearchParams(window.location.search);
   const selectedOptions: Record<string, string> = {};
-  
+
   // Special handling for country parameter which may contain a slash
   const countryParam = params.get('country');
   if (countryParam) {
     selectedOptions['country'] = countryParam;
   }
-  
+
   // Process other parameters
   params.forEach((value, key) => {
     if (key !== 'country') { // Skip country since we already handled it
       selectedOptions[key] = value;
     }
   });
-  
+
   return selectedOptions;
 };
 
@@ -243,26 +243,26 @@ export const parseUrlParams = (): Record<string, string> => {
  * Create a URL with the current options
  */
 export const createUrlWithParams = (
-  selectedOptions: SelectedOptions, 
+  selectedOptions: SelectedOptions,
   countryCode?: string,
   nmsc?: string
 ): string => {
   const queryParams = { ...selectedOptions };
-  
+
   // Add country and NMSC information if provided
   if (countryCode) {
     queryParams.country = countryCode;
   }
-  
+
   if (nmsc) {
     queryParams.nmsc = nmsc;
   }
-  
+
   const queryString = buildQueryString(queryParams);
-  
+
   // Get the base path from Vite environment
   const basePath = import.meta.env.BASE_URL || '/';
-  
+
   // Create URL with the base path included
   return `${removeLastSlashAndWhitespace(window.location.origin)}${basePath}?${queryString}`;
 };
@@ -272,7 +272,7 @@ export const createUrlWithParams = (
  */
 export const getCountriesByNmsc = (): Record<string, string[]> => {
   const nmscGroups: Record<string, string[]> = {};
-  
+
   Object.keys(countryLanguageCodes).forEach((key) => {
     const nmsc = countryLanguageCodes[key].nmsc;
     if (!nmscGroups[nmsc]) {
@@ -280,6 +280,76 @@ export const getCountriesByNmsc = (): Record<string, string[]> => {
     }
     nmscGroups[nmsc].push(key);
   });
-  
+
   return nmscGroups;
 };
+
+type PrettyStringType = {
+  text: string;
+  style: {
+    bold?: boolean;
+    small?: boolean;
+  };
+  separator?: string;
+};
+
+/**
+ * Creates a formatted description of selected frame options
+ * Returns an array of objects with text content and styling information
+ * Each object can include a separator property to control spacing between elements
+ */
+export const getPrettyString = (
+  selectedOptions: SelectedOptions,
+  countryLanguageCode: string
+): PrettyStringType[] => {
+  const { component, environment, brand, uscContext, uscEnv } = selectedOptions;
+  const country = countryLanguageCodes[countryLanguageCode];
+  const result = [];
+
+  result.push({
+    text: country.pretty,
+    style: { bold: true },
+    separator: ' | '
+  });
+
+  result.push({
+    text: brand,
+    style: { small: true },
+    separator: ' | '
+  });
+
+  if (component) {;
+    result.push({
+      text: component,
+      style: { small: true },
+      separator: ' | '
+    });
+  }
+
+  if (uscContext) {
+    result.push({
+      text: uscContext,
+      style: { small: true },
+      separator: ' | '
+    });
+  }
+
+  if (environment) {
+    const environmentName = environment === 'localhost' ? 'Localhost' : environment;
+    result.push({
+      text: environmentName,
+      style: { small: true },
+      separator: ' | '
+    });
+  }
+
+  if (uscEnv) {
+    const envName = uscEnv === 'production' ? 'prod' : uscEnv;
+    result.push({
+      text: envName,
+      style: { small: true },
+    });
+  }
+
+  return result.filter((item) => Boolean(item.text)) as PrettyStringType[];
+}

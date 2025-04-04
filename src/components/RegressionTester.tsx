@@ -4,7 +4,6 @@ import {
   Typography,
   Snackbar,
   Alert,
-  CircularProgress,
   IconButton,
   Drawer,
   useMediaQuery,
@@ -22,11 +21,13 @@ import {
   Settings,
   OpenInNew
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRegressionTester } from '../hooks/useRegressionTester';
 import { countryLanguageCodes } from '../utils';
 import ControlPanel from './controls/ControlPanel';
 import CountrySelector from './controls/CountrySelector';
+import LoadingIndicator from './controls/LoadingIndicator';
+import FrameTitle from './controls/FrameTitle';
 import { useThemeContext } from '../contexts/ThemeContext';
 import { useState } from 'react';
 
@@ -240,6 +241,34 @@ const RegressionTester = () => {
               </Box>
             </Box>
           </Paper>
+          
+          {/* Current frame info section */}
+          {generatedUrl && (
+            <Paper
+              elevation={1}
+              sx={{
+                p: 2,
+                backgroundColor: 'background.paper',
+                borderRadius: 2,
+                transition: theme.transitions.create(['background-color', 'box-shadow']),
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle2" color="primary">
+                  Current Preview
+                </Typography>
+              </Box>
+              <Divider sx={{ mb: 1 }} />
+              <Box sx={{ py: 0.5 }}>
+                <FrameTitle
+                  selectedOptions={selectedOptions}
+                  countryLanguageCode={countryLanguageCode}
+                  maxWidth={280}
+                  wrapText={true}
+                />
+              </Box>
+            </Paper>
+          )}
 
           {/* Country Selector first for better user flow */}
           <CountrySelector
@@ -318,32 +347,13 @@ const RegressionTester = () => {
           }}
         >
           {/* Loading indicator */}
-          {iframeLoading && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 5,
-                bgcolor: theme.palette.mode === 'dark'
-                  ? 'rgba(0, 0, 0, 0.7)'
-                  : 'rgba(255, 255, 255, 0.7)',
-              }}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <CircularProgress color="primary" />
-              </motion.div>
-            </Box>
-          )}
+          <AnimatePresence>
+            {iframeLoading && (
+              <LoadingIndicator 
+                message={`Loading ${countryLanguageCodes[countryLanguageCode]?.pretty || 'Preview'}...`}
+              />
+            )}
+          </AnimatePresence>
 
           {/* The iframe with the component preview */}
           {generatedUrl ? (

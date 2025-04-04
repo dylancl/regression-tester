@@ -72,6 +72,41 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
         onUpdateSyncOption(frame.id, optionName, event.target.checked);
     };
 
+    const listItems = syncableSettings.reduce<React.ReactNode[]>((acc, setting, index) => {
+        acc.push(
+            <ListItem
+                key={setting.key}
+                secondaryAction={
+                    <Switch
+                        edge="end"
+                        onChange={handleToggleChange(setting.key)}
+                        checked={syncOptions[setting.key]}
+                        color="primary"
+                    />
+                }
+            >
+                <ListItemText
+                    primary={setting.label}
+                    secondary={setting.description}
+                    primaryTypographyProps={{ fontWeight: 500 }}
+                />
+            </ListItem>
+        );
+        
+        // Add divider if not the last item
+        if (index < syncableSettings.length - 1) {
+            acc.push(
+                <Divider 
+                    key={`divider-${setting.key}`} 
+                    variant="inset" 
+                    component="li" 
+                />
+            );
+        }
+        
+        return acc;
+    }, []);
+
     return (
         <Dialog
             open={open}
@@ -112,29 +147,7 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
                 </Typography>
 
                 <List sx={{ pt: 2 }}>
-                    {syncableSettings.map((setting, index) => (
-                        <React.Fragment key={setting.key}>
-                            <ListItem
-                                secondaryAction={
-                                    <Switch
-                                        edge="end"
-                                        onChange={handleToggleChange(setting.key)}
-                                        checked={syncOptions[setting.key]}
-                                        color="primary"
-                                    />
-                                }
-                            >
-                                <ListItemText
-                                    primary={setting.label}
-                                    secondary={setting.description}
-                                    primaryTypographyProps={{ fontWeight: 500 }}
-                                />
-                            </ListItem>
-                            {index < syncableSettings.length - 1 && (
-                                <Divider variant="inset" component="li" />
-                            )}
-                        </React.Fragment>
-                    ))}
+                    {listItems}
                 </List>
             </DialogContent>
 
