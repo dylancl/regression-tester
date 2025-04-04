@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, alpha, useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import { SelectedOptions } from '../../types';
 import { getPrettyString } from '../../utils';
 

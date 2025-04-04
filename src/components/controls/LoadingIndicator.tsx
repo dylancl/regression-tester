@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Paper, Typography, CircularProgress, alpha, useTheme } from '@mui/material';
+import { Paper, Typography, CircularProgress, alpha, useTheme } from '@mui/material';
 import { motion } from 'framer-motion';
 
 interface LoadingIndicatorProps {
