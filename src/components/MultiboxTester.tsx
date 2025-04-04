@@ -278,15 +278,20 @@ const MultiboxTester = () => {
     const referenceWidth = activeFrameId && frameLayouts[activeFrameId]?.width 
       ? frameLayouts[activeFrameId].width 
       : frameLayouts[frames[0].id]?.width || 400;
+
+    // Get reference height - either from active frame or first frame
+    const referenceHeight = activeFrameId && frameLayouts[activeFrameId]?.height 
+      ? frameLayouts[activeFrameId].height 
+      : frameLayouts[frames[0].id]?.height || 400;
     
     // Apply this width to all frames
     frames.forEach(frame => {
       if (frame.id !== activeFrameId) {
-        resetFrameSize(frame.id, referenceWidth);
+        resetFrameSize(frame.id, referenceWidth, referenceHeight);
       }
     });
     
-    showNotification(`All frames synced to ${referenceWidth}px width`);
+    showNotification(`All frames synced to ${referenceWidth}px width and ${referenceHeight}px height`);
   }, [frames, activeFrameId, frameLayouts, resetFrameSize, showNotification]);
 
   // Memoize each Frame component to prevent unnecessary re-renders
