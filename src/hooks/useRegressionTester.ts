@@ -6,16 +6,12 @@ import {
   parseUrlParams,
   createUrlWithParams
 } from '../utils';
-
-// Default options
-const defaultOptions: SelectedOptions = {
-  environment: 'prev',
-  component: 'car-filter',
-  uscContext: 'used',
-  uscEnv: 'uat',
-  brand: 'toyota',
-  variantBrand: 'toyota',
-};
+import {
+  saveSingleViewConfig,
+  loadSingleViewConfig,
+  loadMultiboxFirstFrameConfig,
+  defaultOptions
+} from '../utils/configStore';
 
 export const useRegressionTester = () => {
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(defaultOptions);
@@ -24,6 +20,7 @@ export const useRegressionTester = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [iframeLoading, setIframeLoading] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
 
   // Get current country code
   const countryLanguageCode = Object.keys(countryLanguageCodes)[currentCountryIndex];
@@ -33,7 +30,7 @@ export const useRegressionTester = () => {
     const newOptions = { ...options };
     const hasLexus = countryLanguageCodes[countryCode]?.hasLexus;
     const hasStock = countryLanguageCodes[countryCode]?.hasStock;
-    const hasUsed = !!countryLanguageCodes[countryCode]?.hasUsed;
+    const hasUsed = countryLanguageCodes[countryCode]?.hasUsed !== false;
     
     if (newOptions.brand === 'lexus' && !hasLexus) {
       showNotification(`Lexus is not available for ${countryLanguageCodes[countryCode]?.pretty}, switching to Toyota`);
@@ -60,11 +57,12 @@ export const useRegressionTester = () => {
     return newOptions;
   };
 
-  // Initialize from URL params and generate initial URL
+  // Initialize configuration from either URL params, saved state, or defaults
   useEffect(() => {
     const urlParams = parseUrlParams();
 
     if (Object.keys(urlParams).length > 0) {
+      // URL parameters take precedence
       const { country, nmsc, ...optionParams } = urlParams;
 
       // If country param is present, determine the correct country index
@@ -73,6 +71,7 @@ export const useRegressionTester = () => {
         const countryIndex = Object.keys(countryLanguageCodes).findIndex(
           key => key === country
         );
+        
         if (countryIndex !== -1) {
           initialCountryIndex = countryIndex;
         }
@@ -90,11 +89,52 @@ export const useRegressionTester = () => {
       setGeneratedUrl(initialUrl);
       setIframeLoading(true);
     } else {
-      // No params, use defaults and generate URL
-      const defaultCountryCode = Object.keys(countryLanguageCodes)[0];
-      const defaultUrl = generateUrl(defaultOptions, defaultCountryCode);
-      setGeneratedUrl(defaultUrl);
+      // No URL params, try to load from stored configuration
+      // First try to get the Multibox configuration, as that's the most recent when navigating back from Multibox
+      const multiboxConfig = loadMultiboxFirstFrameConfig();
+      
+      if (multiboxConfig) {
+        // Find the country index
+        const countryIndex = Object.keys(countryLanguageCodes).findIndex(
+          key => key === multiboxConfig.countryLanguageCode
+        );
+        
+        if (countryIndex !== -1) {
+          setCurrentCountryIndex(countryIndex);
+        }
+        
+        setSelectedOptions(multiboxConfig.selectedOptions);
+        const url = generateUrl(multiboxConfig.selectedOptions, multiboxConfig.countryLanguageCode);
+        setGeneratedUrl(url);
+        setIframeLoading(true);
+      } else {
+        // If no multibox config, try to load from Single View storage
+        const savedConfig = loadSingleViewConfig();
+        
+        if (savedConfig) {
+          // Using saved Single View configuration
+          const countryIndex = Object.keys(countryLanguageCodes).findIndex(
+            key => key === savedConfig.countryLanguageCode
+          );
+          
+          if (countryIndex !== -1) {
+            setCurrentCountryIndex(countryIndex);
+          }
+          
+          setSelectedOptions(savedConfig.selectedOptions);
+          const url = generateUrl(savedConfig.selectedOptions, savedConfig.countryLanguageCode);
+          setGeneratedUrl(url);
+          setIframeLoading(true);
+        } else {
+          // Fallback to defaults if no saved config
+          const defaultCountryCode = Object.keys(countryLanguageCodes)[0];
+          const defaultUrl = generateUrl(defaultOptions, defaultCountryCode);
+          setGeneratedUrl(defaultUrl);
+        }
+      }
     }
+    
+    setInitialLoadComplete(true);
   }, []);
 
   // Show notification for 3 seconds
@@ -103,17 +143,25 @@ export const useRegressionTester = () => {
       const timer = setTimeout(() => {
         setNotification(null);
       }, 3000);
-
+      
       return () => {
         clearTimeout(timer);
       };
     }
   }, [notification]);
 
-  // Update the URL when options or country changes
+  // Update the URL when options or country changes, but only after initial load
   useEffect(() => {
+    if (!initialLoadComplete) return;
+    
     updateUrl();
-  }, [selectedOptions, currentCountryIndex]);
+    
+    // Save current configuration
+    saveSingleViewConfig({
+      selectedOptions,
+      countryLanguageCode
+    });
+  }, [selectedOptions, countryLanguageCode, initialLoadComplete]);
 
   // Handle option changes
   const handleOptionChange = (name: string, value: string) => {

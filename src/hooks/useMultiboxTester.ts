@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { SelectedOptions } from '../types';
 import { countryLanguageCodes, generateUrl } from '../utils';
-
-// Default configuration for new frames
-const defaultOptions: SelectedOptions = {
-  environment: 'prev',
-  component: 'car-filter',
-  uscContext: 'used',
-  uscEnv: 'uat',
-  brand: 'toyota',
-  variantBrand: 'toyota',
-};
+import { 
+  defaultOptions, 
+  loadSingleViewConfig, 
+  saveMultiboxFirstFrameConfig 
+} from '../utils/configStore';
 
 // Main configuration interface for each frame
 export interface FrameConfig {
@@ -38,13 +33,57 @@ export const useMultiboxTester = () => {
     }
   }, []);
 
+  // Save first frame configuration when it changes
+  useEffect(() => {
+    if (frames.length > 0) {
+      const firstFrame = frames[0];
+      saveMultiboxFirstFrameConfig({
+        selectedOptions: firstFrame.selectedOptions,
+        countryLanguageCode: firstFrame.countryLanguageCode
+      });
+    }
+  }, [frames]);
+
   // Creates initial frames for comparison
   const addInitialFrames = () => {
-    const initialFrames: FrameConfig[] = [
-      createFrameConfig(0),
-      createFrameConfig(1)
-    ];
+    // Try to load configuration from Single View
+    const savedConfig = loadSingleViewConfig();
+    
+    // Create first frame using saved config if available, otherwise use defaults
+    const frame1 = savedConfig 
+      ? createFrameConfigWithSavedConfig(0, savedConfig.selectedOptions, savedConfig.countryLanguageCode)
+      : createFrameConfig(0);
+      
+    // Second frame always uses defaults but with offset position
+    const frame2 = createFrameConfig(1);
+    
+    const initialFrames: FrameConfig[] = [frame1, frame2];
     setFrames(initialFrames);
+  };
+
+  // Factory function for creating frame configurations with saved config
+  const createFrameConfigWithSavedConfig = (
+    index: number, 
+    savedOptions: SelectedOptions, 
+    countryCode: string
+  ): FrameConfig => {
+    const id = `frame-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const initialUrl = generateUrl(savedOptions, countryCode);
+    const offset = 60; // Separation between frames
+    
+    return {
+      id,
+      selectedOptions: { ...savedOptions },
+      countryLanguageCode: countryCode,
+      generatedUrl: initialUrl,
+      iframeLoading: true,
+      customSized: false,
+      syncEnabled: false,
+      position: { 
+        x: 100 + (offset * index), 
+        y: 100 + (offset * index) 
+      }
+    };
   };
 
   // Factory function for creating frame configurations
@@ -157,6 +196,7 @@ export const useMultiboxTester = () => {
       
       // Update source frame with new configuration
       const generatedUrl = generateUrl(newOptions, sourceFrame.countryLanguageCode);
+      
       updatedFrames[sourceFrameIndex] = {
         ...sourceFrame,
         selectedOptions: newOptions,
