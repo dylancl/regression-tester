@@ -10,7 +10,6 @@ import {
   SpeedDialAction,
   Typography,
   Paper,
-  Tooltip,
   Fade,
   Divider,
   ListItemIcon,
@@ -101,7 +100,6 @@ const MultiboxTester = () => {
     handleZoomIn,
     handleZoomOut,
     toggleZoomControls,
-    setShowZoomControls
   } = useZoomControls({
     containerRef: containerParentRef
   });
@@ -113,7 +111,6 @@ const MultiboxTester = () => {
     stopPanning,
     togglePanningMode
   } = usePanningControls({
-    containerRef: framesContainerRef, 
     parentRef: containerParentRef
   });
 

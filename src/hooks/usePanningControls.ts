@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef, RefObject } from 'react';
 
 export interface UsePanningControlsProps {
-  containerRef: RefObject<HTMLDivElement | null>;
   parentRef: RefObject<HTMLDivElement | null>;
 }
 
@@ -14,7 +13,6 @@ export interface UsePanningControlsReturn {
 }
 
 export const usePanningControls = ({
-  containerRef,
   parentRef,
 }: UsePanningControlsProps): UsePanningControlsReturn => {
   const [isPanning, setIsPanning] = useState<boolean>(false);
