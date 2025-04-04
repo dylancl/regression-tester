@@ -8,6 +8,10 @@ import {
   useTheme,
   SpeedDial,
   SpeedDialAction,
+  Typography,
+  Paper,
+  Tooltip,
+  Fade,
 } from '@mui/material';
 import { 
   Add, 
@@ -19,12 +23,15 @@ import {
   GridOff,
   SyncAlt,
   TuneOutlined,
-  VerticalAlignCenter
+  VerticalAlignCenter,
+  OpenWith,
+  Keyboard
 } from '@mui/icons-material';
-import { useState, useCallback, useMemo, memo } from 'react';
+import { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { useMultiboxTester } from '../hooks/useMultiboxTester';
 import { useFrameLayout } from '../hooks/useFrameLayout';
 import { useZoomControls } from '../hooks/useZoomControls';
+import { usePanningControls } from '../hooks/usePanningControls';
 import { Frame } from './controls/Frame';
 import { ZoomControls } from './controls/ZoomControls';
 
@@ -34,6 +41,10 @@ const MultiboxTester = () => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [showGrid, setShowGrid] = useState<boolean>(false);
   const [speedDialOpen, setSpeedDialOpen] = useState<boolean>(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState<boolean>(false);
+  
+  // Container refs for panning
+  const containerParentRef = useRef<HTMLDivElement>(null);
   
   const {
     frames,
@@ -82,8 +93,37 @@ const MultiboxTester = () => {
     handleZoomChange,
     handleZoomIn,
     handleZoomOut,
-    toggleZoomControls
-  } = useZoomControls();
+    toggleZoomControls,
+    setShowZoomControls
+  } = useZoomControls({
+    containerRef: containerParentRef
+  });
+  
+  const {
+    isPanning,
+    isPanningEnabled,
+    startPanning,
+    stopPanning,
+    togglePanningMode
+  } = usePanningControls({
+    containerRef: framesContainerRef, 
+    parentRef: containerParentRef
+  });
+
+  // Handle Escape key to close keyboard shortcuts panel
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showKeyboardShortcuts) {
+        setShowKeyboardShortcuts(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscKey);
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [showKeyboardShortcuts]);
 
   // Memoize handlers to prevent unnecessary rerenders
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, frameId: string) => {
@@ -104,6 +144,11 @@ const MultiboxTester = () => {
     setSnapToGrid(!snapToGrid);
     showNotification(snapToGrid ? 'Snap to grid disabled' : 'Snap to grid enabled');
   }, [snapToGrid, setSnapToGrid, showNotification]);
+
+  // Toggle keyboard shortcuts info
+  const toggleKeyboardShortcuts = useCallback(() => {
+    setShowKeyboardShortcuts(prev => !prev);
+  }, []);
 
   // Create a callback ref function that correctly sets the frameRefs
   const setFrameRef = useCallback((id: string) => (node: HTMLDivElement | null) => {
@@ -346,22 +391,144 @@ const MultiboxTester = () => {
     toggleGrid, toggleSnapToGridHandler, toggleGlobalSync, toggleZoomControls, addNewFrame
   ]);
 
+  // Add SpeedDial actions related to panning
+  const panningSpeedDialAction = useMemo(() => (
+    <SpeedDialAction
+      key="toggle-keyboard-shortcuts"
+      icon={<Keyboard />}
+      tooltipTitle="Keyboard shortcuts"
+      tooltipPlacement="left"
+      onClick={toggleKeyboardShortcuts}
+      sx={{
+        bgcolor: theme.palette.mode === 'dark' ? '#333333' : '#ffffff',
+        '&:hover': {
+          bgcolor: theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5',
+          transform: 'scale(1.05)',
+        },
+        boxShadow: theme.shadows[2],
+      }}
+    />
+  ), [theme, toggleKeyboardShortcuts]);
+
+  // Update speedDialActions array to include the new action
+  const updatedSpeedDialActions = useMemo(() => [
+    ...speedDialActions,
+    panningSpeedDialAction
+  ], [speedDialActions, panningSpeedDialAction]);
+
   return (
-    <Box sx={{ 
-      height: '100%',
-      width: '100%',
-      overflow: 'auto',
-      p: 2,
-      backgroundColor: theme.palette.background.default,
-      position: 'relative'
-    }}>
+    <Box 
+      ref={containerParentRef}
+      sx={{ 
+        height: '100%',
+        width: '100%',
+        overflow: 'auto',
+        p: 2,
+        backgroundColor: theme.palette.background.default,
+        position: 'relative',
+        cursor: isPanningEnabled ? (isPanning ? 'grabbing' : 'grab') : 'default',
+      }}
+      onMouseDown={(e) => {
+        // Don't start panning if clicking on a UI element
+        if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.frames-container')) {
+          startPanning(e);
+        }
+      }}
+    >
+      {/* Panning indicator */}
+      {isPanningEnabled && (
+        <Fade in={true}>
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: showZoomControls ? 80 : 16,
+              left: 16,
+              zIndex: 1000,
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(4px)',
+              borderRadius: 2,
+              padding: 1,
+              display: 'flex',
+              alignItems: 'center',
+              boxShadow: theme.shadows[3],
+              border: `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <OpenWith sx={{ mr: 1, color: theme.palette.primary.main }} />
+            <Typography variant="body2">
+              Press <b>Space + Drag</b> to pan
+            </Typography>
+          </Box>
+        </Fade>
+      )}
+
       {/* Draggable and resizable frames container - Apply zoom to the entire container */}
       <Box 
         ref={framesContainerRef}
+        className="frames-container"
         sx={framesContainerStyle}
       >
         {frameComponents}
       </Box>
+
+      {/* Keyboard shortcuts info panel */}
+      <Fade in={showKeyboardShortcuts}>
+        <Paper
+          elevation={3}
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 'auto',
+            minWidth: 300,
+            maxWidth: 400,
+            p: 3,
+            zIndex: 1600,
+            backdropFilter: 'blur(5px)',
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(30, 30, 30, 0.9)' 
+              : 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 2,
+            border: `1px solid ${theme.palette.divider}`,
+            display: showKeyboardShortcuts ? 'block' : 'none',
+          }}
+        >
+          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <Keyboard sx={{ mr: 1 }} /> Keyboard Shortcuts
+          </Typography>
+          
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'auto 1fr',
+            gap: 2,
+            alignItems: 'center'
+          }}>
+            <Typography variant="body2" fontWeight="bold">Space + Drag</Typography>
+            <Typography variant="body2">Pan around the canvas</Typography>
+            
+            <Typography variant="body2" fontWeight="bold">Ctrl + Scroll</Typography>
+            <Typography variant="body2">Zoom in/out</Typography>
+            
+            <Typography variant="body2" fontWeight="bold">Esc</Typography>
+            <Typography variant="body2">Close this panel</Typography>
+          </Box>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Typography 
+              variant="body2" 
+              color="primary" 
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+              onClick={toggleKeyboardShortcuts}
+            >
+              Close
+            </Typography>
+          </Box>
+        </Paper>
+      </Fade>
 
       {/* Frame Options Menu */}
       <Menu
@@ -442,7 +609,7 @@ const MultiboxTester = () => {
           }
         }}
       >
-        {speedDialActions}
+        {updatedSpeedDialActions}
       </SpeedDial>
 
       {/* Zoom controls panel */}
