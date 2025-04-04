@@ -29,7 +29,8 @@ import {
   VerticalAlignCenter,
   OpenWith,
   Keyboard,
-  ViewCompact
+  ViewCompact,
+  SettingsOverscan
 } from '@mui/icons-material';
 import { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { useMultiboxTester } from '../hooks/useMultiboxTester';
@@ -39,6 +40,7 @@ import { usePanningControls } from '../hooks/usePanningControls';
 import { Frame } from './controls/Frame';
 import { ZoomControls } from './controls/ZoomControls';
 import { DeviceSizeMenu } from './controls/DeviceSizeMenu';
+import { GlobalConfigMenu } from './controls/GlobalConfigMenu';
 
 const MultiboxTester = () => {
   const theme = useTheme();
@@ -48,6 +50,7 @@ const MultiboxTester = () => {
   const [speedDialOpen, setSpeedDialOpen] = useState<boolean>(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState<boolean>(false);
   const [sizeMenuAnchorEl, setSizeMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [showGlobalConfig, setShowGlobalConfig] = useState<boolean>(false);
   
   // Container refs for panning
   const containerParentRef = useRef<HTMLDivElement>(null);
@@ -522,13 +525,38 @@ const MultiboxTester = () => {
     />
   ), [theme, syncAllFrameSizes]);
 
-  // Update speedDialActions array to include the sync sizes action
+  // Add global config action to SpeedDial actions
+  const globalConfigSpeedDialAction = useMemo(() => (
+    <SpeedDialAction
+      key="toggle-global-config"
+      icon={<SettingsOverscan />}
+      tooltipTitle="Global Configuration"
+      tooltipPlacement="left"
+      onClick={() => setShowGlobalConfig(!showGlobalConfig)}
+      sx={{
+        bgcolor: showGlobalConfig 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
+        color: showGlobalConfig ? theme.palette.primary.main : 'inherit',
+        '&:hover': {
+          bgcolor: showGlobalConfig 
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
+          transform: 'scale(1.05)',
+        },
+        boxShadow: theme.shadows[2],
+      }}
+    />
+  ), [theme, showGlobalConfig]);
+
+  // Update speedDialActions array to include all actions
   const updatedSpeedDialActions = useMemo(() => [
     ...speedDialActions,
+    globalConfigSpeedDialAction,
     syncSizesSpeedDialAction,
     panningToggleSpeedDialAction,
     panningSpeedDialAction
-  ], [speedDialActions, syncSizesSpeedDialAction, panningToggleSpeedDialAction, panningSpeedDialAction]);
+  ], [speedDialActions, globalConfigSpeedDialAction, syncSizesSpeedDialAction, panningToggleSpeedDialAction, panningSpeedDialAction]);
 
   return (
     <Box 
@@ -710,7 +738,15 @@ const MultiboxTester = () => {
         </Alert>
       </Snackbar>
 
-
+      {/* Global Configuration Menu */}
+      {showGlobalConfig && (
+        <GlobalConfigMenu 
+          frames={frames}
+          onChangeCountry={changeCountry}
+          onOptionChange={handleOptionChange}
+          onShowNotification={showNotification}
+        />
+      )}
 
       {/* SpeedDial component for actions */}
       <SpeedDial
