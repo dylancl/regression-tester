@@ -1,21 +1,22 @@
 import React, { memo, useMemo } from 'react';
-import { 
-  Box, 
-  Card, 
-  CardHeader, 
-  Typography, 
-  IconButton, 
-  Tooltip, 
+import {
+  Box,
+  Card,
+  CardHeader,
+  Typography,
+  IconButton,
+  Tooltip,
   Stack,
   useTheme,
 } from '@mui/material';
-import { 
-  ContentCopy, 
-  MoreVert, 
-  Close, 
+import {
+  ContentCopy,
+  MoreVert,
+  Close,
   OpenWith,
   Sync,
-  SyncDisabled
+  SyncDisabled,
+  AspectRatio
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { CircularProgress } from '@mui/material';
@@ -36,7 +37,7 @@ interface FrameProps {
   onShowNotification: (message: string) => void;
   frameRef: React.RefObject<HTMLDivElement>;
   frame: FrameConfig;
-  layout: FrameLayout;  
+  layout: FrameLayout;
   isActive?: boolean;
   isDragging?: boolean;
   isResizing?: boolean;
@@ -47,8 +48,8 @@ interface FrameProps {
   onResize: (e: React.MouseEvent<Element>, frameId: string, direction: string) => void;
 }
 
-export const Frame = memo<FrameProps>(({ 
-  frame, 
+export const Frame = memo<FrameProps>(({
+  frame,
   layout,
   isDragging,
   isResizing,
@@ -67,14 +68,14 @@ export const Frame = memo<FrameProps>(({
   const theme = useTheme();
 
   // Memoize complex styles to prevent recalculations
-  const cardStyle = useMemo(() => ({ 
+  const cardStyle = useMemo(() => ({
     height: layout.height || 400,
     display: 'flex',
     flexDirection: 'column',
     borderRadius: 2,
     overflow: 'hidden',
-    transition: (isResizing || isDragging) 
-      ? 'none' 
+    transition: (isResizing || isDragging)
+      ? 'none'
       : theme.transitions.create(['box-shadow']),
     '&:hover': {
       boxShadow: theme.shadows[6]
@@ -82,46 +83,73 @@ export const Frame = memo<FrameProps>(({
     position: 'relative',
   }), [layout.height, isResizing, isDragging, theme]);
 
-  const headerStyle = useMemo(() => ({ 
+  const headerStyle = useMemo(() => ({
     p: 1.5,
-    bgcolor: theme.palette.mode === 'dark' 
-      ? 'rgba(66, 66, 66, 0.2)' 
+    bgcolor: theme.palette.mode === 'dark'
+      ? 'rgba(66, 66, 66, 0.2)'
       : 'rgba(248, 248, 248, 0.8)',
     borderBottom: `1px solid ${theme.palette.divider}`,
-    cursor: 'move'
+    cursor: 'move',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   }), [theme]);
 
   return (
-    <Card 
-      elevation={3} 
+    <Card
+      elevation={3}
       sx={cardStyle}
     >
       <CardHeader
         title={
-          <Box 
+          <Box
             sx={{ display: 'flex', alignItems: 'center' }}
             className="frame-drag-handle"
             onMouseDown={(e) => onMove(e, frame.id)}
           >
-            <OpenWith 
-              fontSize="small" 
-              sx={{ 
-                mr: 1, 
+            <OpenWith
+              fontSize="small"
+              sx={{
+                mr: 1,
                 cursor: 'move',
                 color: theme.palette.text.secondary
               }}
             />
             <Typography variant="subtitle1">
-              {countryLanguageCodes[frame.countryLanguageCode]?.pretty || 'Frame'} 
+              {countryLanguageCodes[frame.countryLanguageCode]?.pretty || 'Frame'}
               ({frame.selectedOptions.component})
             </Typography>
           </Box>
         }
         action={
           <Stack direction="row" spacing={1}>
+            {/* Frame size indicator */}
+            <Tooltip title="Current frame width" placement="top">
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255,255,255,0.1)'
+                    : 'rgba(0,0,0,0.05)',
+                  borderRadius: 1,
+                  px: 0.8,
+                  py: 0.2,
+                  mx: 1,
+                  fontSize: '0.75rem',
+                  color: theme.palette.text.secondary,
+                  border: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <AspectRatio fontSize="inherit" sx={{ mr: 0.5, opacity: 0.7 }} />
+                <Typography variant="caption" fontFamily="monospace" fontWeight="medium">
+                  {Math.round(layout.width) || 400}px x {Math.round(layout.height) || 400}px
+                </Typography>
+              </Box>
+            </Tooltip>
             <Tooltip title={frame.syncEnabled ? "Disable config sync" : "Enable config sync"}>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => onToggleSync(frame.id)}
                 color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
                 disabled={globalSyncEnabled}
@@ -130,8 +158,8 @@ export const Frame = memo<FrameProps>(({
               </IconButton>
             </Tooltip>
             <Tooltip title="Copy URL">
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => onCopyUrl(frame.generatedUrl)}
               >
                 <ContentCopy fontSize="small" />
@@ -146,9 +174,9 @@ export const Frame = memo<FrameProps>(({
               </IconButton>
             </Tooltip>
             <Tooltip title="Remove frame">
-              <IconButton 
-                size="small" 
-                color="error" 
+              <IconButton
+                size="small"
+                color="error"
                 onClick={() => onRemove(frame.id)}
               >
                 <Close fontSize="small" />
@@ -158,10 +186,9 @@ export const Frame = memo<FrameProps>(({
         }
         sx={headerStyle}
       />
-      
-      {/* Iframe container - Now takes up the full available space */}
-      <Box sx={{ 
-        flex: 1, 
+
+      <Box sx={{
+        flex: 1,
         position: 'relative',
         minHeight: '360px',
         overflow: 'hidden'
@@ -178,8 +205,8 @@ export const Frame = memo<FrameProps>(({
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 5,
-            bgcolor: theme.palette.mode === 'dark' 
-              ? 'rgba(0, 0, 0, 0.7)' 
+            bgcolor: theme.palette.mode === 'dark'
+              ? 'rgba(0, 0, 0, 0.7)'
               : 'rgba(255, 255, 255, 0.7)',
           }}>
             <motion.div
@@ -191,8 +218,7 @@ export const Frame = memo<FrameProps>(({
             </motion.div>
           </Box>
         )}
-        
-        {/* The iframe with the component preview */}
+
         <iframe
           src={frame.generatedUrl}
           style={{
@@ -205,7 +231,7 @@ export const Frame = memo<FrameProps>(({
           onLoad={() => onIframeLoad(frame.id)}
           title={`Frame ${frame.id}`}
         />
-        
+
         {/* Floating configuration menu */}
         <FloatingConfigMenu
           frame={frame}
@@ -214,7 +240,7 @@ export const Frame = memo<FrameProps>(({
           onShowNotification={onShowNotification}
         />
       </Box>
-      
+
       {/* Resize handles */}
       <ResizeHandles frameId={frame.id} onResize={onResize} />
     </Card>

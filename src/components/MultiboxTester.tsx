@@ -12,8 +12,12 @@ import {
   Paper,
   Tooltip,
   Fade,
+  Divider,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import { 
+  ChevronRight,
   Add, 
   Fullscreen,
   FullscreenExit,
@@ -25,7 +29,8 @@ import {
   TuneOutlined,
   VerticalAlignCenter,
   OpenWith,
-  Keyboard
+  Keyboard,
+  ViewCompact
 } from '@mui/icons-material';
 import { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { useMultiboxTester } from '../hooks/useMultiboxTester';
@@ -34,6 +39,7 @@ import { useZoomControls } from '../hooks/useZoomControls';
 import { usePanningControls } from '../hooks/usePanningControls';
 import { Frame } from './controls/Frame';
 import { ZoomControls } from './controls/ZoomControls';
+import { DeviceSizeMenu } from './controls/DeviceSizeMenu';
 
 const MultiboxTester = () => {
   const theme = useTheme();
@@ -42,6 +48,7 @@ const MultiboxTester = () => {
   const [showGrid, setShowGrid] = useState<boolean>(false);
   const [speedDialOpen, setSpeedDialOpen] = useState<boolean>(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState<boolean>(false);
+  const [sizeMenuAnchorEl, setSizeMenuAnchorEl] = useState<null | HTMLElement>(null);
   
   // Container refs for panning
   const containerParentRef = useRef<HTMLDivElement>(null);
@@ -125,6 +132,29 @@ const MultiboxTester = () => {
     };
   }, [showKeyboardShortcuts]);
 
+  // Add global mouseup and mouseleave event handlers to stop panning
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isPanning) {
+        stopPanning();
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (isPanning) {
+        stopPanning();
+      }
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [isPanning, stopPanning]);
+
   // Memoize handlers to prevent unnecessary rerenders
   const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>, frameId: string) => {
     setMenuAnchorEl(event.currentTarget);
@@ -135,6 +165,20 @@ const MultiboxTester = () => {
     setMenuAnchorEl(null);
     setActiveFrameId(null);
   }, [setActiveFrameId]);
+
+  const handleSizeMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    setSizeMenuAnchorEl(event.currentTarget);
+  }, []);
+
+  const handleSizeMenuClose = useCallback(() => {
+    setSizeMenuAnchorEl(null);
+  }, []);
+
+  const handleSizeSelect = useCallback((width: number, height: number) => {
+    if (activeFrameId) {
+      resetFrameSize(activeFrameId, width, height);
+    }
+  }, [activeFrameId, resetFrameSize]);
 
   const toggleGrid = useCallback(() => {
     setShowGrid(prev => !prev);
@@ -229,6 +273,25 @@ const MultiboxTester = () => {
     handleMenuClose();
   }, [activeFrameId, resetFrameSize, resetFrameCustomSize, handleMenuClose, isMobile]);
 
+  // Add a function to sync all frame sizes to the active frame's size
+  const syncAllFrameSizes = useCallback(() => {
+    if (!frames.length) return;
+    
+    // Get reference width - either from active frame or first frame
+    const referenceWidth = activeFrameId && frameLayouts[activeFrameId]?.width 
+      ? frameLayouts[activeFrameId].width 
+      : frameLayouts[frames[0].id]?.width || 400;
+    
+    // Apply this width to all frames
+    frames.forEach(frame => {
+      if (frame.id !== activeFrameId) {
+        resetFrameSize(frame.id, referenceWidth);
+      }
+    });
+    
+    showNotification(`All frames synced to ${referenceWidth}px width`);
+  }, [frames, activeFrameId, frameLayouts, resetFrameSize, showNotification]);
+
   // Memoize each Frame component to prevent unnecessary re-renders
   const frameComponents = useMemo(() => frames.map((frame) => {
     // Get layout with position fallback logic
@@ -238,7 +301,7 @@ const MultiboxTester = () => {
     // Only calculate styles that depend on the frame's state
     const frameStyle = {
       width: layout.width || 400,
-      height: 'auto',
+      height: layout.height || "auto",
       position: 'absolute',
       left: position.x,
       top: position.y,
@@ -391,6 +454,30 @@ const MultiboxTester = () => {
     toggleGrid, toggleSnapToGridHandler, toggleGlobalSync, toggleZoomControls, addNewFrame
   ]);
 
+  // Add the panning toggle action to the SpeedDial actions
+  const panningToggleSpeedDialAction = useMemo(() => (
+    <SpeedDialAction
+      key="toggle-panning"
+      icon={<OpenWith />}
+      tooltipTitle={isPanningEnabled ? "Disable panning mode" : "Enable panning mode"}
+      tooltipPlacement="left"
+      onClick={togglePanningMode}
+      sx={{
+        bgcolor: isPanningEnabled 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
+        color: isPanningEnabled ? theme.palette.primary.main : 'inherit',
+        '&:hover': {
+          bgcolor: isPanningEnabled 
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
+          transform: 'scale(1.05)',
+        },
+        boxShadow: theme.shadows[2],
+      }}
+    />
+  ), [theme, isPanningEnabled, togglePanningMode]);
+
   // Add SpeedDial actions related to panning
   const panningSpeedDialAction = useMemo(() => (
     <SpeedDialAction
@@ -410,11 +497,32 @@ const MultiboxTester = () => {
     />
   ), [theme, toggleKeyboardShortcuts]);
 
-  // Update speedDialActions array to include the new action
+  // Add the sync sizes action to the SpeedDial actions
+  const syncSizesSpeedDialAction = useMemo(() => (
+    <SpeedDialAction
+      key="sync-frame-sizes"
+      icon={<ViewCompact />}
+      tooltipTitle="Sync all frame sizes"
+      tooltipPlacement="left"
+      onClick={syncAllFrameSizes}
+      sx={{
+        bgcolor: theme.palette.mode === 'dark' ? '#333333' : '#ffffff',
+        '&:hover': {
+          bgcolor: theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5',
+          transform: 'scale(1.05)',
+        },
+        boxShadow: theme.shadows[2],
+      }}
+    />
+  ), [theme, syncAllFrameSizes]);
+
+  // Update speedDialActions array to include the sync sizes action
   const updatedSpeedDialActions = useMemo(() => [
     ...speedDialActions,
+    syncSizesSpeedDialAction,
+    panningToggleSpeedDialAction,
     panningSpeedDialAction
-  ], [speedDialActions, panningSpeedDialAction]);
+  ], [speedDialActions, syncSizesSpeedDialAction, panningToggleSpeedDialAction, panningSpeedDialAction]);
 
   return (
     <Box 
@@ -430,7 +538,7 @@ const MultiboxTester = () => {
       }}
       onMouseDown={(e) => {
         // Don't start panning if clicking on a UI element
-        if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.frames-container')) {
+        if (isPanningEnabled && (e.target === e.currentTarget || (e.target as HTMLElement).closest('.frames-container'))) {
           startPanning(e);
         }
       }}
@@ -545,15 +653,39 @@ const MultiboxTester = () => {
         }}
       >
         {menuItemMaximizeHeight}
-        <MenuItem onClick={handleResetFrameSize}>
-          <AspectRatio fontSize="small" sx={{ mr: 1 }} />
-          Reset Size
+        <MenuItem onClick={handleSizeMenuOpen}>
+          <ListItemIcon>
+            <AspectRatio fontSize="small" />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Change Frame Size" 
+            secondary={activeFrameId ? `Current: ${frameLayouts[activeFrameId]?.width || 400}px` : undefined}
+          />
+          <ChevronRight fontSize="small" />
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => handleResetFrameSize()}>
+          <ListItemIcon>
+            <AspectRatio fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Reset Size" />
         </MenuItem>
         <MenuItem onClick={handleResetAll}>
-          <AspectRatio fontSize="small" sx={{ mr: 1 }} />
-          Reset All
+          <ListItemIcon>
+            <AspectRatio fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Reset All" />
         </MenuItem>
       </Menu>
+
+      {/* Device Size Menu */}
+      <DeviceSizeMenu
+        anchorEl={sizeMenuAnchorEl}
+        currentWidth={activeFrameId ? (frameLayouts[activeFrameId]?.width || 400) : 400}
+        onClose={handleSizeMenuClose}
+        onSelect={handleSizeSelect}
+        onCloseParentMenu={handleMenuClose} // Add this to close the parent menu
+      />
 
       {/* Notification snackbar */}
       <Snackbar

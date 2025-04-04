@@ -39,7 +39,7 @@ export interface UseFrameLayoutReturn {
   handleFrameMoveStart: (e: React.MouseEvent, frameId: string) => void;
   handleMultiDirectionResize: (e: React.MouseEvent, frameId: string, direction: string) => void;
   toggleMaximizeHeight: (frameId: string) => void;
-  resetFrameSize: (frameId: string, defaultWidth?: number) => void;
+  resetFrameSize: (frameId: string, defaultWidth?: number, defaultHeight?: number) => void;
   toggleConfigPanel: (frameId: string) => void;
   setActiveFrameId: (frameId: string | null) => void;
   setResizingFrameId: (frameId: string | null) => void;
@@ -761,13 +761,13 @@ export const useFrameLayout = ({
   }, [onMarkFrameAsCustomSized, onUpdateFramePosition]);
 
   // Reset frame size - memoized for performance
-  const resetFrameSize = useCallback((frameId: string, defaultWidth: number = DEFAULT_FRAME_SIZE) => {
+  const resetFrameSize = useCallback((frameId: string, defaultWidth: number = DEFAULT_FRAME_SIZE, defaultHeight: number = DEFAULT_FRAME_SIZE) => {
     setFrameLayouts(prev => {
       const position = prev[frameId]?.position;
       return {
         ...prev,
         [frameId]: {
-          height: DEFAULT_FRAME_SIZE,
+          height: defaultHeight,
           width: defaultWidth,
           maxHeight: false,
           position
