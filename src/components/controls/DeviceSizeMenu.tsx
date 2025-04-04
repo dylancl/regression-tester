@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Menu, MenuItem, Typography, ListItemIcon, Divider } from '@mui/material';
 import { 
   PhoneAndroid, 
@@ -7,7 +7,7 @@ import {
   Monitor,
   AspectRatio
 } from '@mui/icons-material';
-import { getDeviceSizeByCategory } from '../../utils/deviceSizes';
+import { getDeviceSizeByCategory, DeviceSize } from '../../utils/deviceSizes';
 
 interface DeviceSizeMenuProps {
   anchorEl: HTMLElement | null;
@@ -24,13 +24,26 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
   onSelect,
   onCloseParentMenu
 }) => {
-  const mobileSizes = getDeviceSizeByCategory('mobile');
-  const tabletSizes = getDeviceSizeByCategory('tablet');
-  const laptopSizes = getDeviceSizeByCategory('laptop');
-  const desktopSizes = getDeviceSizeByCategory('desktop');
+  // Define categories and their corresponding icons
+  const categories = [
+    { id: 'mobile' as const, label: 'Mobile', icon: <PhoneAndroid fontSize="small" /> },
+    { id: 'tablet' as const, label: 'Tablet', icon: <TabletAndroid fontSize="small" /> },
+    { id: 'laptop' as const, label: 'Laptop', icon: <Laptop fontSize="small" /> },
+    { id: 'desktop' as const, label: 'Desktop', icon: <Monitor fontSize="small" /> }
+  ];
+
+  // Get all device sizes by category
+  const deviceSizesByCategory = Object.fromEntries(
+    categories.map(category => [
+      category.id, 
+      getDeviceSizeByCategory(category.id)
+    ])
+  );
 
   // Custom sizes not defined in deviceSizes.ts
-  const customSizes = [[320, 568], [375, 667], [414, 896], [768, 1024], [1280, 800], [1440, 900], [1680, 1050], [1920, 1080]].map(([width, height]) => ({ width, height }));
+  const customSizes = useCallback(() => {
+    return [[320, 568], [375, 667], [414, 896], [768, 1024], [1280, 800], [1440, 900], [1680, 1050], [1920, 1080]].map(([width, height]) => ({ width, height }));
+  }, []);
 
   // Handler for item selection
   const handleMenuItemClick = (width: number, height: number) => {
@@ -42,6 +55,39 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
       onCloseParentMenu();
     }
   };
+
+  const renderDeviceSection = (category: typeof categories[0], sizes: DeviceSize[]) => (
+    <React.Fragment key={category.id}>
+      <MenuItem disabled sx={{ opacity: 0.7 }}>
+        <ListItemIcon>
+          {category.icon}
+        </ListItemIcon>
+        <Typography variant="body2" fontWeight="bold">{category.label}</Typography>
+      </MenuItem>
+      
+      {sizes.map((size) => (
+        <MenuItem 
+          key={`${category.id}-${size.width}-${size.height}`}
+          onClick={() => handleMenuItemClick(size.width, size.height)}
+          selected={currentWidth === size.width}
+          sx={{ 
+            pl: 4,
+            minHeight: 36,
+            '&:hover': {
+              backgroundColor: (theme) => theme.palette.action.hover,
+            }
+          }}
+        >
+          <Typography variant="body2">
+            {size.name} ({size.width}x{size.height}px)
+            {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
+          </Typography>
+        </MenuItem>
+      ))}
+      
+      <Divider sx={{ my: 0.5 }} />
+    </React.Fragment>
+  );
 
   return (
     <Menu
@@ -68,125 +114,10 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
         }
       }}
     >
-      {/* Mobile Section */}
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
-        <ListItemIcon>
-          <PhoneAndroid fontSize="small" />
-        </ListItemIcon>
-        <Typography variant="body2" fontWeight="bold">Mobile</Typography>
-      </MenuItem>
-      
-      {mobileSizes.map((size) => (
-        <MenuItem 
-          key={`mobile-${size.width}-${size.height}`}
-          onClick={() => handleMenuItemClick(size.width, size.height)}
-          selected={currentWidth === size.width}
-          sx={{ 
-            pl: 4,
-            minHeight: 36,
-            '&:hover': {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }
-          }}
-        >
-          <Typography variant="body2">
-            {size.name} ({size.width}px/{size.height}px)
-            {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
-          </Typography>
-        </MenuItem>
-      ))}
-
-      <Divider sx={{ my: 0.5 }} />
-
-      {/* Tablet Section */}
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
-        <ListItemIcon>
-          <TabletAndroid fontSize="small" />
-        </ListItemIcon>
-        <Typography variant="body2" fontWeight="bold">Tablet</Typography>
-      </MenuItem>
-      
-      {tabletSizes.map((size) => (
-        <MenuItem 
-          key={`tablet-${size.width}-${size.height}`}
-          onClick={() => handleMenuItemClick(size.width, size.height)}
-          selected={currentWidth === size.width}
-          sx={{ 
-            pl: 4,
-            minHeight: 36,
-            '&:hover': {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }
-          }}
-        >
-          <Typography variant="body2">
-            {size.name} ({size.width}px)
-            {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
-          </Typography>
-        </MenuItem>
-      ))}
-
-      <Divider sx={{ my: 0.5 }} />
-
-      {/* Laptop Section */}
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
-        <ListItemIcon>
-          <Laptop fontSize="small" />
-        </ListItemIcon>
-        <Typography variant="body2" fontWeight="bold">Laptop</Typography>
-      </MenuItem>
-      
-      {laptopSizes.map((size) => (
-        <MenuItem 
-          key={`laptop-${size.width}-${size.height}`}
-          onClick={() => handleMenuItemClick(size.width, size.height)}
-          selected={currentWidth === size.width}
-          sx={{ 
-            pl: 4,
-            minHeight: 36,
-            '&:hover': {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }
-          }}
-        >
-          <Typography variant="body2">
-            {size.name} ({size.width}px)
-            {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
-          </Typography>
-        </MenuItem>
-      ))}
-
-      <Divider sx={{ my: 0.5 }} />
-
-      {/* Desktop Section */}
-      <MenuItem disabled sx={{ opacity: 0.7 }}>
-        <ListItemIcon>
-          <Monitor fontSize="small" />
-        </ListItemIcon>
-        <Typography variant="body2" fontWeight="bold">Desktop</Typography>
-      </MenuItem>
-      
-      {desktopSizes.map((size) => (
-        <MenuItem 
-          key={`laptop-${size.width}-${size.height}`}
-          onClick={() => handleMenuItemClick(size.width, size.height)}
-          selected={currentWidth === size.width}
-          sx={{ 
-            pl: 4,
-            minHeight: 36,
-            '&:hover': {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }
-          }}
-        >
-          <Typography variant="body2">
-            {size.name} ({size.width}px)
-            {size.description && <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>- {size.description}</Typography>}
-          </Typography>
-        </MenuItem>
-      ))}
-
-      <Divider sx={{ my: 0.5 }} />
+      {/* Dynamically render device sections */}
+      {categories.map(category => 
+        renderDeviceSection(category, deviceSizesByCategory[category.id])
+      )}
 
       {/* Custom Section */}
       <MenuItem disabled sx={{ opacity: 0.7 }}>
@@ -196,7 +127,7 @@ export const DeviceSizeMenu: React.FC<DeviceSizeMenuProps> = ({
         <Typography variant="body2" fontWeight="bold">Custom</Typography>
       </MenuItem>
       
-      {customSizes.map(({ width, height }) => (
+      {customSizes().map(({ width, height }) => (
         <MenuItem 
           key={`custom-${width}-${height}`}
           onClick={() => handleMenuItemClick(width, height)}
