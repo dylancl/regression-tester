@@ -171,7 +171,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                 }}>
                     <Stack spacing={2.5}>
                         {/* Country Selection Section */}
-                        <Box>
+                        <Box sx={{
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)',
+                            p: 1.5, 
+                            borderRadius: 1,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <Typography variant="subtitle2" color="primary" gutterBottom fontWeight="medium">
                                 Country
                             </Typography>
@@ -205,7 +210,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                         <Divider />
 
                         {/* Environment Section */}
-                        <Box>
+                        <Box sx={{
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)',
+                            p: 1.5, 
+                            borderRadius: 1,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <Typography variant="subtitle2" color="primary" gutterBottom fontWeight="medium">
                                 Environment
                             </Typography>
@@ -249,7 +259,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                         <Divider />
 
                         {/* Component Section */}
-                        <Box>
+                        <Box sx={{
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)',
+                            p: 1.5, 
+                            borderRadius: 1,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <Typography variant="subtitle2" color="primary" gutterBottom fontWeight="medium">
                                 Component
                             </Typography>
@@ -273,7 +288,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                         <Divider />
 
                         {/* USC Context Section */}
-                        <Box>
+                        <Box sx={{
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)',
+                            p: 1.5, 
+                            borderRadius: 1,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <Typography variant="subtitle2" color="primary" gutterBottom fontWeight="medium">
                                 USC Context
                             </Typography>
@@ -307,7 +327,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                         <Divider />
 
                         {/* Brand Section */}
-                        <Box>
+                        <Box sx={{
+                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.9)',
+                            p: 1.5, 
+                            borderRadius: 1,
+                            boxShadow: theme.shadows[1]
+                        }}>
                             <Typography variant="subtitle2" color="primary" gutterBottom fontWeight="medium">
                                 Brand Settings
                             </Typography>

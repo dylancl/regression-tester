@@ -8,7 +8,6 @@ import {
   useTheme,
   SpeedDial,
   SpeedDialAction,
-  alpha,
 } from '@mui/material';
 import { 
   Add, 
@@ -34,6 +33,7 @@ const MultiboxTester = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [showGrid, setShowGrid] = useState<boolean>(false);
+  const [speedDialOpen, setSpeedDialOpen] = useState<boolean>(false);
   
   const {
     frames,
@@ -170,14 +170,12 @@ const MultiboxTester = () => {
     </MenuItem>
   ), [activeFrameId, frameLayouts, toggleMaximizeHeight]);
 
-  // Handler for resetting frame size - memoized to avoid recreating function on each render
   const handleResetFrameSize = useCallback(() => {
     if (activeFrameId) {
       resetFrameSize(activeFrameId, isMobile ? (window.innerWidth - 40) : 400);
     }
   }, [activeFrameId, resetFrameSize, isMobile]);
 
-  // Handler for resetting all frame properties - memoized to avoid recreating function on each render
   const handleResetAll = useCallback(() => {
     if (activeFrameId) {
       resetFrameSize(activeFrameId, isMobile ? (window.innerWidth - 40) : 400);
@@ -255,9 +253,9 @@ const MultiboxTester = () => {
       tooltipPlacement="left"
       onClick={addNewFrame}
       sx={{
-        bgcolor: theme.palette.background.paper,
+        bgcolor: theme.palette.mode === 'dark' ? '#333333' : '#ffffff',
         '&:hover': {
-          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
+          bgcolor: theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5',
           transform: 'scale(1.05)',
         },
         boxShadow: theme.shadows[2],
@@ -270,12 +268,14 @@ const MultiboxTester = () => {
       tooltipPlacement="left"
       onClick={toggleGlobalSync}
       sx={{
-        bgcolor: globalSyncEnabled ? alpha(theme.palette.primary.main, 0.1) : theme.palette.background.paper,
+        bgcolor: globalSyncEnabled 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
         color: globalSyncEnabled ? theme.palette.primary.main : 'inherit',
         '&:hover': {
           bgcolor: globalSyncEnabled 
-            ? alpha(theme.palette.primary.main, 0.2) 
-            : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'),
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
           transform: 'scale(1.05)',
         },
         boxShadow: theme.shadows[2],
@@ -288,12 +288,14 @@ const MultiboxTester = () => {
       tooltipPlacement="left"
       onClick={toggleGrid}
       sx={{
-        bgcolor: showGrid ? alpha(theme.palette.primary.main, 0.1) : theme.palette.background.paper,
+        bgcolor: showGrid 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
         color: showGrid ? theme.palette.primary.main : 'inherit',
         '&:hover': {
           bgcolor: showGrid 
-            ? alpha(theme.palette.primary.main, 0.2) 
-            : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'),
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
           transform: 'scale(1.05)',
         },
         boxShadow: theme.shadows[2],
@@ -306,12 +308,14 @@ const MultiboxTester = () => {
       tooltipPlacement="left"
       onClick={toggleSnapToGridHandler}
       sx={{
-        bgcolor: snapToGrid ? alpha(theme.palette.primary.main, 0.1) : theme.palette.background.paper,
+        bgcolor: snapToGrid 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
         color: snapToGrid ? theme.palette.primary.main : 'inherit',
         '&:hover': {
           bgcolor: snapToGrid 
-            ? alpha(theme.palette.primary.main, 0.2) 
-            : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'),
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
           transform: 'scale(1.05)',
         },
         boxShadow: theme.shadows[2],
@@ -324,12 +328,14 @@ const MultiboxTester = () => {
       tooltipPlacement="left"
       onClick={toggleZoomControls}
       sx={{
-        bgcolor: showZoomControls ? alpha(theme.palette.primary.main, 0.1) : theme.palette.background.paper,
+        bgcolor: showZoomControls 
+          ? (theme.palette.mode === 'dark' ? '#2c5282' : '#e3f2fd') 
+          : (theme.palette.mode === 'dark' ? '#333333' : '#ffffff'),
         color: showZoomControls ? theme.palette.primary.main : 'inherit',
         '&:hover': {
           bgcolor: showZoomControls 
-            ? alpha(theme.palette.primary.main, 0.2) 
-            : (theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'),
+            ? (theme.palette.mode === 'dark' ? '#3b6eb4' : '#bbdefb')
+            : (theme.palette.mode === 'dark' ? '#444444' : '#f5f5f5'),
           transform: 'scale(1.05)',
         },
         boxShadow: theme.shadows[2],
@@ -399,14 +405,19 @@ const MultiboxTester = () => {
         </Alert>
       </Snackbar>
 
+
+
       {/* SpeedDial component for actions */}
       <SpeedDial
         ariaLabel="Action controls"
+        open={speedDialOpen}
+        onOpen={() => setSpeedDialOpen(true)}
+        onClose={() => setSpeedDialOpen(false)}
         sx={{
           position: 'fixed',
           bottom: 16,
           right: 16,
-          zIndex: 1000,
+          zIndex: 1501,
           '& .MuiFab-primary': {
             bgcolor: theme.palette.primary.main,
             '&:hover': {
@@ -419,6 +430,8 @@ const MultiboxTester = () => {
           }
         }}
         icon={<TuneOutlined />}
+        direction="up"
+        openIcon={<TuneOutlined />}
         FabProps={{
           sx: {
             boxShadow: theme.shadows[4],

@@ -312,8 +312,16 @@ export const useFrameLayout = ({
     const container = framesContainerRef.current;
     if (!frameElement || !container) return;
 
+    // Store the drag handle element for pointer lock
+    const dragHandleElement = (e.target as HTMLElement).closest('.frame-drag-handle') as HTMLElement;
+
     const frameRect = frameElement.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
+
+    // Get current scale/zoom from transform style
+    const transformStyle = window.getComputedStyle(container).transform;
+    const matrix = new DOMMatrix(transformStyle);
+    const scale = matrix.a || 1; // The 'a' value in the matrix represents scale
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -340,6 +348,15 @@ export const useFrameLayout = ({
 
     originalCursorRef.current = document.body.style.cursor;
     document.body.style.cursor = 'grabbing';
+    
+    // Apply pointer lock if available
+    if (dragHandleElement) {
+      dragHandleElement.requestPointerLock();
+    }
+
+    // Track movements when using pointer lock
+    let accumulatedMovementX = 0;
+    let accumulatedMovementY = 0;
 
     // Track the last time we updated the position
     let lastPositionUpdate = performance.now();
@@ -376,11 +393,25 @@ export const useFrameLayout = ({
       // Store mouse position for auto-scroll
       mousePositionRef.current = { x: moveEvent.clientX, y: moveEvent.clientY };
 
-      const deltaX = moveEvent.clientX - startX;
-      const deltaY = moveEvent.clientY - startY;
+      // Account for zoom level and pointer lock in movement calculations
+      let deltaX, deltaY;
+      
+      if (document.pointerLockElement === dragHandleElement) {
+        // When pointer is locked, use movementX/Y directly
+        accumulatedMovementX += moveEvent.movementX;
+        accumulatedMovementY += moveEvent.movementY;
+        deltaX = accumulatedMovementX / scale;
+        deltaY = accumulatedMovementY / scale;
+      } else {
+        // When pointer is not locked, calculate delta from start position
+        deltaX = (moveEvent.clientX - startX) / scale;
+        deltaY = (moveEvent.clientY - startY) / scale;
+      }
 
       let newX = Math.max(0, startPosition.x + deltaX);
-      let newY = Math.max(0, startPosition.y + deltaY);
+      // Apply the same header height constraint we use for resize
+      const headerHeight = 60; // Same as in resize handler
+      let newY = Math.max(headerHeight, startPosition.y + deltaY);
 
       // Apply grid snapping if enabled
       const snappedPosition = maybeSnapToGrid({ x: newX, y: newY });
@@ -426,6 +457,11 @@ export const useFrameLayout = ({
       setDraggingFrame(false);
       setActiveFrameId(null);
 
+      // Exit pointer lock if active
+      if (document.pointerLockElement === dragHandleElement) {
+        document.exitPointerLock();
+      }
+
       // Force any pending layout updates to be applied
       batchLayoutUpdates();
 
@@ -437,12 +473,27 @@ export const useFrameLayout = ({
 
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('mouseleave', handleMouseUp);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('pointerlockchange', handlePointerLockChange);
+    };
+
+    const handleMouseLeave = (event: MouseEvent) => {
+      if (document.pointerLockElement !== dragHandleElement &&
+        event?.target && (event.target as Node)?.nodeName === 'HTML') {
+        handleMouseUp();
+      }
+    };
+
+    const handlePointerLockChange = () => {
+      if (document.pointerLockElement !== dragHandleElement && isMouseDown.current) {
+        handleMouseUp();
+      }
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mouseleave', handleMouseUp);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
   }, [
     frameLayouts, 
     maybeSnapToGrid, 
@@ -468,6 +519,11 @@ export const useFrameLayout = ({
     if (!frameElement || !container) return;
 
     resizeHandleRef.current = e.target as HTMLElement;
+
+    // Get current scale/zoom from transform style
+    const transformStyle = window.getComputedStyle(container).transform;
+    const matrix = new DOMMatrix(transformStyle);
+    const scale = matrix.a || 1; // The 'a' value in the matrix represents scale
 
     const frameRect = frameElement.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
@@ -538,21 +594,37 @@ export const useFrameLayout = ({
       let newX = startPosition.x;
       let newY = startPosition.y;
 
+      // Adjusted movements accounting for zoom level
+      const adjustedMovementX = accumulatedMovementX / scale;
+      const adjustedMovementY = accumulatedMovementY / scale;
+
       if (direction.includes('e')) {
-        newWidth = Math.max(MIN_FRAME_WIDTH, startWidth + accumulatedMovementX);
+        newWidth = Math.max(MIN_FRAME_WIDTH, startWidth + adjustedMovementX);
       }
       if (direction.includes('w')) {
-        const width = Math.max(MIN_FRAME_WIDTH, startWidth - accumulatedMovementX);
+        const width = Math.max(MIN_FRAME_WIDTH, startWidth - adjustedMovementX);
         newWidth = width;
         newX = startPosition.x + (startWidth - width);
       }
       if (direction.includes('s')) {
-        newHeight = Math.max(MIN_FRAME_HEIGHT, startHeight + accumulatedMovementY);
+        newHeight = Math.max(MIN_FRAME_HEIGHT, startHeight + adjustedMovementY);
       }
       if (direction.includes('n')) {
-        const height = Math.max(MIN_FRAME_HEIGHT, startHeight - accumulatedMovementY);
+        // Don't allow resizing above a minimum top position (under header)
+        const headerHeight = 60; // header height in pixels
+        
+        const height = Math.max(MIN_FRAME_HEIGHT, startHeight - adjustedMovementY);
         newHeight = height;
-        newY = startPosition.y + (startHeight - height);
+        
+        // New Y position after resize
+        const potentialY = startPosition.y + (startHeight - height);
+        // Ensure we don't go above the header
+        newY = Math.max(headerHeight, potentialY);
+        
+        // If we constrained Y, adjust height accordingly
+        if (newY > potentialY) {
+          newHeight = startHeight - ((newY - startPosition.y) * scale);
+        }
       }
 
       // Apply grid snapping if enabled
