@@ -8,6 +8,8 @@ import {
   Tooltip,
   Stack,
   useTheme,
+  Divider,
+  ButtonGroup,
 } from '@mui/material';
 import {
   ContentCopy,
@@ -17,6 +19,7 @@ import {
   Sync,
   SyncDisabled,
   SettingsInputComponent,
+  Refresh
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { CircularProgress } from '@mui/material';
@@ -37,6 +40,7 @@ interface FrameProps {
   onChangeCountry: (frameId: string, code: string) => void;
   onShowNotification: (message: string) => void;
   onUpdateSyncOption: (frameId: string, optionName: string, enabled: boolean) => void;
+  onReload: (frameId: string) => void; // New prop for reload functionality
   frameRef: React.RefObject<HTMLDivElement>;
   frame: FrameConfig;
   layout: FrameLayout;
@@ -67,6 +71,7 @@ export const Frame = memo<FrameProps>(({
   onChangeCountry,
   onShowNotification,
   onUpdateSyncOption,
+  onReload,
 }) => {
   const theme = useTheme();
   const [syncOptionsOpen, setSyncOptionsOpen] = useState(false);
@@ -92,7 +97,7 @@ export const Frame = memo<FrameProps>(({
   }), [layout.height, isResizing, isDragging, theme]);
 
   const headerStyle = useMemo(() => ({
-    p: 1.5,
+    p: 0.75,  // More consistent padding all around
     bgcolor: theme.palette.mode === 'dark'
       ? 'rgba(66, 66, 66, 0.2)'
       : 'rgba(248, 248, 248, 0.8)',
@@ -100,8 +105,27 @@ export const Frame = memo<FrameProps>(({
     cursor: 'move',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    minHeight: '48px',  // Ensure consistent height
+    '& .MuiCardHeader-content': {
+      overflow: 'hidden',
+    },
+    '& .MuiCardHeader-action': {
+      margin: 0,  // Remove default margin that causes vertical alignment issues
+    }
   }), [theme]);
+
+  // Helper to determine which buttons to show based on available width
+  const getVisibleControls = (width: number) => {
+    // Always show remove button
+    if (width < 200) return ['remove'];
+    if (width < 280) return ['remove', 'reload'];
+    if (width < 350) return ['remove', 'reload', 'sync'];
+    if (width < 420) return ['remove', 'reload', 'sync', 'copy'];
+    return ['remove', 'reload', 'sync', 'copy', 'syncOptions', 'menu'];
+  };
+
+  const visibleControls = getVisibleControls(layout.width || 400);
 
   return (
     <Card
@@ -111,7 +135,11 @@ export const Frame = memo<FrameProps>(({
       <CardHeader
         title={
           <Box
-            sx={{ display: 'flex', alignItems: 'center' }}
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              width: '100%'
+            }}
             className="frame-drag-handle"
             onMouseDown={(e) => onMove(e, frame.id)}
           >
@@ -123,86 +151,151 @@ export const Frame = memo<FrameProps>(({
                 color: theme.palette.text.secondary
               }}
             />
-            <Typography variant="subtitle1">
+            <Typography
+              variant="subtitle1"
+              noWrap
+              sx={{ 
+                maxWidth: '120px', // Smaller to leave space for controls
+                '@media (min-width: 600px)': {
+                  maxWidth: '180px',
+                },
+                // Adjust the max width dynamically based on frame width
+                ...(layout.width && {
+                  maxWidth: Math.max(60, layout.width - 260),
+                }),
+              }}
+            >
               {countryLanguageCodes[frame.countryLanguageCode]?.pretty || 'Frame'}
               ({frame.selectedOptions.component})
             </Typography>
           </Box>
         }
         action={
-          <Stack direction="row" spacing={1}>
-            {/* Frame size indicator */}
-            <Tooltip title="Current frame width" placement="top">
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255,255,255,0.1)'
-                    : 'rgba(0,0,0,0.05)',
-                  borderRadius: 1,
-                  p: 0.5,
-                  fontSize: '0.75rem',
-                  color: theme.palette.text.secondary,
-                  border: `1px solid ${theme.palette.divider}`
-                }}
-              >
-                <Typography variant="caption" fontFamily="monospace" fontWeight="medium">
-                  {Math.round(layout.width) || 400}x{Math.round(layout.height) || 400}px
-                </Typography>
-              </Box>
-            </Tooltip>
-            <Tooltip title={frame.syncEnabled ? "Disable config sync" : "Enable config sync"}>
-              <IconButton
-                size="small"
-                onClick={() => onToggleSync(frame.id)}
-                color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
-                disabled={globalSyncEnabled}
-              >
-                {frame.syncEnabled ? <Sync fontSize="small" /> : <SyncDisabled fontSize="small" />}
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Sync configuration options">
-              <IconButton
-                size="small"
-                onClick={handleOpenSyncOptions}
-                color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
-                disabled={globalSyncEnabled}
-              >
-                <SettingsInputComponent fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Copy URL">
-              <IconButton
-                size="small"
-                onClick={() => onCopyUrl(frame.generatedUrl)}
-              >
-                <ContentCopy fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Frame options">
-              <IconButton
-                size="small"
-                onClick={(e) => onMenuOpen(e, frame.id)}
-              >
-                <MoreVert fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Remove frame">
-              <IconButton
-                size="small"
-                color="error"
-                onClick={() => onRemove(frame.id)}
-              >
-                <Close fontSize="small" />
-              </IconButton>
-            </Tooltip>
+          <Stack 
+            direction="row" 
+            spacing={0.5} 
+            divider={<Divider orientation="vertical" flexItem />}
+            sx={{ 
+              flexWrap: 'nowrap', 
+              alignItems: 'center',
+              ml: 1,
+              overflow: 'visible', // Allow tooltip to show outside container
+            }}
+          >
+            {/* Frame size indicator - only show if wider than 280px */}
+            {layout.width > 280 && (
+              <Tooltip title="Current frame dimensions" placement="top">
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.palette.mode === 'dark'
+                      ? 'rgba(255,255,255,0.1)'
+                      : 'rgba(0,0,0,0.05)',
+                    borderRadius: 1,
+                    px: 0.75,
+                    py: 0.25, // Reduced to match overall header height
+                    fontSize: '0.75rem',
+                    color: theme.palette.text.secondary,
+                    border: `1px solid ${theme.palette.divider}`,
+                    minWidth: '72px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography variant="caption" fontFamily="monospace" fontWeight="medium">
+                    {Math.round(layout.width) || 400}x{Math.round(layout.height) || 400}
+                  </Typography>
+                </Box>
+              </Tooltip>
+            )}
+            
+            {/* Responsive button controls */}
+            <ButtonGroup 
+              variant="text" 
+              size="small" 
+              sx={{ 
+                '& .MuiButtonGroup-grouped': {
+                  minWidth: 'auto',
+                  px: 0.5, // Tighter horizontal padding
+                }
+              }}
+            >
+              {visibleControls.includes('reload') && (
+                <Tooltip title="Reload frame" placement="top">
+                  <IconButton 
+                    size="small"
+                    onClick={() => onReload(frame.id)}
+                  >
+                    <Refresh fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              {visibleControls.includes('copy') && (
+                <Tooltip title="Copy URL" placement="top">
+                  <IconButton
+                    size="small"
+                    onClick={() => onCopyUrl(frame.generatedUrl)}
+                  >
+                    <ContentCopy fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              {visibleControls.includes('sync') && (
+                <Tooltip title={frame.syncEnabled ? "Disable config sync" : "Enable config sync"} placement="top">
+                  <IconButton
+                    size="small"
+                    onClick={() => onToggleSync(frame.id)}
+                    color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
+                    disabled={globalSyncEnabled}
+                  >
+                    {frame.syncEnabled ? <Sync fontSize="small" /> : <SyncDisabled fontSize="small" />}
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              {visibleControls.includes('syncOptions') && (
+                <Tooltip title="Sync configuration options" placement="top">
+                  <IconButton
+                    size="small"
+                    onClick={handleOpenSyncOptions}
+                    color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
+                    disabled={globalSyncEnabled}
+                  >
+                    <SettingsInputComponent fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              {visibleControls.includes('menu') && (
+                <Tooltip title="Frame options" placement="top">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => onMenuOpen(e, frame.id)}
+                  >
+                    <MoreVert fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              
+              {/* Always show remove button */}
+              <Tooltip title="Remove frame" placement="top">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => onRemove(frame.id)}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </ButtonGroup>
           </Stack>
         }
         sx={headerStyle}
       />
-
+      
       <Box sx={{
         flex: 1,
         position: 'relative',

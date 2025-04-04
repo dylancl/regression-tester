@@ -69,6 +69,7 @@ const MultiboxTester = () => {
     toggleFrameSync,
     toggleGlobalSync,
     updateFrameSyncOptions,
+    refreshFrame,
   } = useMultiboxTester();
  
   const {
@@ -345,6 +346,7 @@ const MultiboxTester = () => {
           onShowNotification={showNotification}
           frameRef={null as unknown as React.RefObject<HTMLDivElement>} // Passing null ref as we're using Box ref
           onUpdateSyncOption={updateFrameSyncOptions}
+          onReload={refreshFrame}
         />
       </Box>
     );
