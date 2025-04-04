@@ -15,6 +15,7 @@ export interface FrameConfig {
   generatedUrl: string;
   iframeLoading: boolean;
   syncEnabled?: boolean; // For per-frame sync functionality
+  syncOptions?: Record<string, boolean>; // For granular sync control of specific settings
   customSized?: boolean; // For manual frame resizing
   position?: { x: number, y: number };
 }
@@ -79,6 +80,15 @@ export const useMultiboxTester = () => {
       iframeLoading: true,
       customSized: false,
       syncEnabled: false,
+      syncOptions: {
+        environment: true,
+        component: true,
+        uscContext: true,
+        uscEnv: true,
+        brand: true,
+        variantBrand: true,
+        country: true, 
+      },
       position: { 
         x: 100 + (offset * index), 
         y: 100 + (offset * index) 
@@ -101,6 +111,15 @@ export const useMultiboxTester = () => {
       iframeLoading: true,
       customSized: false,
       syncEnabled: false,
+      syncOptions: {
+        environment: true,
+        component: true,
+        uscContext: true,
+        uscEnv: true,
+        brand: true,
+        variantBrand: true,
+        country: true, 
+      },
       position: { 
         x: 100 + (offset * index), 
         y: 100 + (offset * index) 
@@ -207,36 +226,43 @@ export const useMultiboxTester = () => {
       // Sync changes to other frames if enabled
       const shouldSync = globalSyncEnabled || sourceFrame.syncEnabled;
       if (shouldSync) {
-        showNotification('Syncing configuration to other frames');
+        // Check if this specific option should be synced
+        const shouldSyncThisOption = sourceFrame.syncOptions?.[name] !== false;
         
-        updatedFrames.forEach((frame, index) => {
-          if (index !== sourceFrameIndex) {
-            // Handle country-specific compatibility for target frames
-            const frameHasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
-            const frameHasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
-            const frameHasUsed = countryLanguageCodes[frame.countryLanguageCode]?.hasUsed !== false;
-            let updatedOptions = { ...frame.selectedOptions };
-            
-            if (name === 'brand' && value === 'lexus') {
-              updatedOptions.brand = frameHasLexus ? value : 'toyota';
-            } else if (name === 'uscContext' && value === 'stock') {
-              updatedOptions.uscContext = frameHasStock ? value : (frameHasUsed ? 'used' : 'stock');
-            } else if (name === 'uscContext' && value === 'used') {
-              updatedOptions.uscContext = frameHasUsed ? value : (frameHasStock ? 'stock' : 'used');
-            } else {
-              updatedOptions[name] = value;
+        if (shouldSyncThisOption) {
+          showNotification(`Syncing ${name} to other frames`);
+          
+          updatedFrames.forEach((frame, index) => {
+            if (index !== sourceFrameIndex) {
+              // Handle country-specific compatibility for target frames
+              const frameHasLexus = countryLanguageCodes[frame.countryLanguageCode]?.hasLexus;
+              const frameHasStock = countryLanguageCodes[frame.countryLanguageCode]?.hasStock;
+              const frameHasUsed = countryLanguageCodes[frame.countryLanguageCode]?.hasUsed !== false;
+              let updatedOptions = { ...frame.selectedOptions };
+              
+              if (name === 'brand' && value === 'lexus') {
+                updatedOptions.brand = frameHasLexus ? value : 'toyota';
+              } else if (name === 'uscContext' && value === 'stock') {
+                updatedOptions.uscContext = frameHasStock ? value : (frameHasUsed ? 'used' : 'stock');
+              } else if (name === 'uscContext' && value === 'used') {
+                updatedOptions.uscContext = frameHasUsed ? value : (frameHasStock ? 'stock' : 'used');
+              } else {
+                updatedOptions[name] = value;
+              }
+              
+              // Update target frame
+              const frameGeneratedUrl = generateUrl(updatedOptions, frame.countryLanguageCode);
+              updatedFrames[index] = {
+                ...frame,
+                selectedOptions: updatedOptions,
+                generatedUrl: frameGeneratedUrl,
+                iframeLoading: true
+              };
             }
-            
-            // Update target frame
-            const frameGeneratedUrl = generateUrl(updatedOptions, frame.countryLanguageCode);
-            updatedFrames[index] = {
-              ...frame,
-              selectedOptions: updatedOptions,
-              generatedUrl: frameGeneratedUrl,
-              iframeLoading: true
-            };
-          }
-        });
+          });
+        } else {
+          showNotification(`Sync for "${name}" is disabled in settings`);
+        }
       }
       
       return updatedFrames;
@@ -265,20 +291,27 @@ export const useMultiboxTester = () => {
       // Sync country to other frames if enabled
       const shouldSync = globalSyncEnabled || sourceFrame.syncEnabled;
       if (shouldSync) {
-        showNotification('Syncing country to other frames');
+        // Check if country should be synced
+        const shouldSyncCountry = sourceFrame.syncOptions?.country !== false;
         
-        updatedFrames.forEach((frame, index) => {
-          if (index !== sourceFrameIndex) {
-            const frameGeneratedUrl = generateUrl(frame.selectedOptions, code);
-            
-            updatedFrames[index] = {
-              ...frame,
-              countryLanguageCode: code,
-              generatedUrl: frameGeneratedUrl,
-              iframeLoading: true
-            };
-          }
-        });
+        if (shouldSyncCountry) {
+          showNotification('Syncing country to other frames');
+          
+          updatedFrames.forEach((frame, index) => {
+            if (index !== sourceFrameIndex) {
+              const frameGeneratedUrl = generateUrl(frame.selectedOptions, code);
+              
+              updatedFrames[index] = {
+                ...frame,
+                countryLanguageCode: code,
+                generatedUrl: frameGeneratedUrl,
+                iframeLoading: true
+              };
+            }
+          });
+        } else {
+          showNotification('Country sync is disabled in settings');
+        }
       }
       
       return updatedFrames;
@@ -361,6 +394,25 @@ export const useMultiboxTester = () => {
     showNotification(newGlobalSyncState ? 'Global sync enabled' : 'Global sync disabled');
   };
 
+  // Update sync options for a specific frame
+  const updateFrameSyncOptions = (frameId: string, optionName: string, enabled: boolean) => {
+    setFrames(current => 
+      current.map(frame => 
+        frame.id === frameId 
+          ? { 
+              ...frame, 
+              syncOptions: { 
+                ...(frame.syncOptions || {}), 
+                [optionName]: enabled 
+              } 
+            } 
+          : frame
+      )
+    );
+    
+    showNotification(`${enabled ? 'Enabled' : 'Disabled'} syncing ${optionName}`);
+  };
+
   // Expose interface for the hook
   return {
     frames,
@@ -381,5 +433,6 @@ export const useMultiboxTester = () => {
     updateFramePosition,
     toggleFrameSync,
     toggleGlobalSync,
+    updateFrameSyncOptions,
   };
 };

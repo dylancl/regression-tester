@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import {
   Box,
   Card,
@@ -16,6 +16,7 @@ import {
   OpenWith,
   Sync,
   SyncDisabled,
+  SettingsInputComponent,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { CircularProgress } from '@mui/material';
@@ -24,6 +25,7 @@ import { FrameLayout } from '../../hooks/useFrameLayout';
 import { countryLanguageCodes } from '../../utils';
 import { ResizeHandles } from './ResizeHandles';
 import FloatingConfigMenu from './FloatingConfigMenu';
+import SyncOptionsMenu from './SyncOptionsMenu';
 
 interface FrameProps {
   onRemove: (frameId: string) => void;
@@ -34,6 +36,7 @@ interface FrameProps {
   onOptionChange: (frameId: string, name: string, value: string) => void;
   onChangeCountry: (frameId: string, code: string) => void;
   onShowNotification: (message: string) => void;
+  onUpdateSyncOption: (frameId: string, optionName: string, enabled: boolean) => void;
   frameRef: React.RefObject<HTMLDivElement>;
   frame: FrameConfig;
   layout: FrameLayout;
@@ -63,8 +66,14 @@ export const Frame = memo<FrameProps>(({
   onOptionChange,
   onChangeCountry,
   onShowNotification,
+  onUpdateSyncOption,
 }) => {
   const theme = useTheme();
+  const [syncOptionsOpen, setSyncOptionsOpen] = useState(false);
+
+  // Handlers for sync options menu
+  const handleOpenSyncOptions = () => setSyncOptionsOpen(true);
+  const handleCloseSyncOptions = () => setSyncOptionsOpen(false);
 
   // Memoize complex styles to prevent recalculations
   const cardStyle = useMemo(() => ({
@@ -154,6 +163,16 @@ export const Frame = memo<FrameProps>(({
                 {frame.syncEnabled ? <Sync fontSize="small" /> : <SyncDisabled fontSize="small" />}
               </IconButton>
             </Tooltip>
+            <Tooltip title="Sync configuration options">
+              <IconButton
+                size="small"
+                onClick={handleOpenSyncOptions}
+                color={(frame.syncEnabled || globalSyncEnabled) ? "primary" : "default"}
+                disabled={globalSyncEnabled}
+              >
+                <SettingsInputComponent fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Copy URL">
               <IconButton
                 size="small"
@@ -240,6 +259,14 @@ export const Frame = memo<FrameProps>(({
 
       {/* Resize handles */}
       <ResizeHandles frameId={frame.id} onResize={onResize} />
+
+      {/* Sync options menu */}
+      <SyncOptionsMenu
+        open={syncOptionsOpen}
+        onClose={handleCloseSyncOptions}
+        frame={frame}
+        onUpdateSyncOption={onUpdateSyncOption}
+      />
     </Card>
   );
 });
