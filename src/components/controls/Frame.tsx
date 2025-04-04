@@ -129,21 +129,19 @@ export const Frame = memo<FrameProps>(({
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   backgroundColor: theme.palette.mode === 'dark'
                     ? 'rgba(255,255,255,0.1)'
                     : 'rgba(0,0,0,0.05)',
                   borderRadius: 1,
-                  px: 0.8,
-                  py: 0.2,
-                  mx: 1,
+                  p: 0.5,
                   fontSize: '0.75rem',
                   color: theme.palette.text.secondary,
                   border: `1px solid ${theme.palette.divider}`
                 }}
               >
-                <AspectRatio fontSize="inherit" sx={{ mr: 0.5, opacity: 0.7 }} />
                 <Typography variant="caption" fontFamily="monospace" fontWeight="medium">
-                  {Math.round(layout.width) || 400}px x {Math.round(layout.height) || 400}px
+                  {Math.round(layout.width) || 400}x{Math.round(layout.height) || 400}px
                 </Typography>
               </Box>
             </Tooltip>
