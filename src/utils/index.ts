@@ -335,7 +335,7 @@ export const getPrettyString = (
   }
 
   if (environment) {
-    const environmentName = environment === 'localhost' ? 'Localhost' : environment;
+    const environmentName = environment === 'localhost' ? 'local' : environment;
     result.push({
       text: environmentName,
       style: { small: true },
