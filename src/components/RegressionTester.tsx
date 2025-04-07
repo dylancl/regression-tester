@@ -28,13 +28,23 @@ import ControlPanel from './controls/ControlPanel';
 import CountrySelector from './controls/CountrySelector';
 import LoadingIndicator from './controls/LoadingIndicator';
 import FrameTitle from './controls/FrameTitle';
+import TestInstructions, { TestProgressData } from './controls/TestInstructions';
+import ProgressTracker from './controls/ProgressTracker';
 import { useThemeContext } from '../contexts/ThemeContext';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const RegressionTester = () => {
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeContext();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [testProgress, setTestProgress] = useState<TestProgressData>({
+    total: 0,
+    passed: 0,
+    failed: 0,
+    blocked: 0,
+    notTested: 0,
+    completion: 0
+  });
 
   const {
     selectedOptions,
@@ -53,6 +63,11 @@ const RegressionTester = () => {
   } = useRegressionTester();
 
   const [urlHovered, setUrlHovered] = useState(false);
+
+  // Memoize the progress update handler to prevent infinite re-renders
+  const handleProgressUpdate = useCallback((progressData: TestProgressData) => {
+    setTestProgress(progressData);
+  }, []);
 
   // Calculate the drawer width based on screen size
   const drawerWidth = isMobile ? '100%' : 340;
@@ -79,6 +94,8 @@ const RegressionTester = () => {
             boxSizing: 'border-box',
             position: isMobile ? 'fixed' : 'relative',
             borderRight: `1px solid ${theme.palette.divider}`,
+            display: 'flex',
+            flexDirection: 'column',
           },
         }}
       >
@@ -115,7 +132,7 @@ const RegressionTester = () => {
         <Box sx={{
           p: 2,
           overflowY: 'auto',
-          height: 'calc(100% - 60px)',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           gap: 2
@@ -285,6 +302,11 @@ const RegressionTester = () => {
             countryLanguageCode={countryLanguageCode}
           />
         </Box>
+
+        {/* Progress Tracker at bottom of sidebar */}
+        {testProgress.total > 0 && (
+          <ProgressTracker progressData={testProgress} />
+        )}
       </Drawer>
 
       {/* Main content area */}
@@ -403,6 +425,12 @@ const RegressionTester = () => {
           {notification}
         </Alert>
       </Snackbar>
+      
+      {/* Test Instructions Component with Floating Action Button */}
+      <TestInstructions 
+        selectedOptions={selectedOptions}
+        onProgressUpdate={handleProgressUpdate}
+      />
     </Box>
   );
 };
