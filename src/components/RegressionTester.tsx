@@ -63,14 +63,21 @@ const RegressionTester = () => {
   } = useRegressionTester();
 
   const [urlHovered, setUrlHovered] = useState(false);
+  const [testSidebarOpen, setTestSidebarOpen] = useState(false);
 
   // Memoize the progress update handler to prevent infinite re-renders
   const handleProgressUpdate = useCallback((progressData: TestProgressData) => {
     setTestProgress(progressData);
   }, []);
 
+  // Handle test sidebar toggle
+  const toggleTestSidebar = useCallback(() => {
+    setTestSidebarOpen(prev => !prev);
+  }, []);
+
   // Calculate the drawer width based on screen size
-  const drawerWidth = isMobile ? '100%' : 340;
+  const configDrawerWidth = isMobile ? '100%' : 340;
+  const testDrawerWidth = isMobile ? '100%' : 420;
 
   return (
     <Box sx={{
@@ -83,14 +90,14 @@ const RegressionTester = () => {
         variant={isMobile ? "temporary" : "persistent"}
         open={sidebarOpen}
         sx={{
-          width: sidebarOpen ? drawerWidth : 0,
+          width: sidebarOpen ? configDrawerWidth : 0,
           flexShrink: 0,
           transition: theme.transitions.create('width', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.standard,
           }),
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
+            width: configDrawerWidth,
             boxSizing: 'border-box',
             position: isMobile ? 'fixed' : 'relative',
             borderRight: `1px solid ${theme.palette.divider}`,
@@ -409,6 +416,12 @@ const RegressionTester = () => {
         </Box>
       </Box>
 
+      {/* Test Instructions sidebar */}
+      <TestInstructions 
+        selectedOptions={selectedOptions}
+        onProgressUpdate={handleProgressUpdate}
+      />
+
       {/* Notification snackbar */}
       <Snackbar
         open={!!notification}
@@ -425,12 +438,6 @@ const RegressionTester = () => {
           {notification}
         </Alert>
       </Snackbar>
-      
-      {/* Test Instructions Component with Floating Action Button */}
-      <TestInstructions 
-        selectedOptions={selectedOptions}
-        onProgressUpdate={handleProgressUpdate}
-      />
     </Box>
   );
 };

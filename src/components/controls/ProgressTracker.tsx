@@ -16,7 +16,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ progressData }) => {
         p: 2,
         borderTop: `1px solid ${theme.palette.divider}`,
         backgroundColor: theme.palette.mode === 'dark'
-          ? 'rgba(66, 66, 66, 0.2)'
+          ? 'rgba(66, 66, 66, 0.2)' 
           : 'rgba(248, 248, 248, 0.8)',
       }}
     >
