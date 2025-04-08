@@ -62,7 +62,7 @@ export const fetchTestScenariosFromSheets = async (): Promise<TestScenarioMap> =
   }
 };
 
-// Function to parse the new improved sheet format
+// Function to parse the sheet format
 // Components sheet: ComponentID | Component | Brand | Context | Title | Description | Tags
 // Steps sheet: ComponentID | ScenarioID | StepID | Instruction | ExpectedResult | Status
 const parseNewSheetFormat = (componentsData: any, stepsData: any): TestScenarioMap => {
