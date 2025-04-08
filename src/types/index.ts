@@ -17,6 +17,7 @@ export type SelectedOptions = Partial<{
   uscEnv: string;
   brand: string;
   variantBrand: string;
+  device: string; // New property for device type (mobile/desktop)
   [key: string]: string;
 }>;
 
@@ -25,6 +26,7 @@ export type Environment = 'localhost' | 'dev' | 'acc' | 'prev' | 'prod';
 export type UscContext = 'used' | 'stock';
 export type UscEnv = 'uat' | 'production';
 export type Brand = 'toyota' | 'lexus';
+export type DeviceType = 'desktop' | 'mobile'; // New type for device options
 
 // Theme types
 export type ThemeMode = 'light' | 'dark';

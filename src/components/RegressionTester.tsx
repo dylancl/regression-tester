@@ -11,15 +11,20 @@ import {
   Tooltip,
   Divider,
   Stack,
+  Menu,
+  Chip,
 } from "@mui/material";
 import {
   ChevronLeft,
   ContentCopy,
-  Menu,
+  Menu as MenuIcon,
   DarkMode,
   LightMode,
   Settings,
   OpenInNew,
+  AspectRatio,
+  PhoneAndroid,
+  ScreenRotationAlt,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRegressionTester } from "../hooks/useRegressionTester";
@@ -34,6 +39,119 @@ import TestInstructions, {
 import ProgressTracker from "./controls/ProgressTracker";
 import { useThemeContext } from "../contexts/ThemeContext";
 import { useState, useCallback } from "react";
+import { DeviceSizeMenu } from "./controls/DeviceSizeMenu";
+
+// A simplified version of the ResizeHandles component for the single view
+const SingleViewResizeHandles = ({
+  onResize,
+}: {
+  onResize: (e: React.MouseEvent, direction: string) => void;
+}) => {
+  const theme = useTheme();
+
+  // Style constants for resize handles
+  const resizeHandleStyles = {
+    position: "absolute",
+    width: 20,
+    height: 20,
+    zIndex: 100,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    transition: "background-color 0.2s ease",
+  };
+
+  // Handle grabber style
+  const handleGrabberStyle = {
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    backgroundColor: "currentColor",
+    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+    boxShadow:
+      "0 0 0 2px rgba(255, 255, 255, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.2)",
+    "&:hover": {
+      transform: "scale(1.5)",
+      boxShadow:
+        "0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.5)",
+    },
+  };
+
+  // Use a more prominent color for handles
+  const handleColor =
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, 0.7)"
+      : "rgba(0, 0, 0, 0.5)";
+
+  // Common styles for all handles
+  const commonStyles = {
+    color: handleColor,
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      zIndex: -1,
+    },
+    "&:hover": {
+      color: theme.palette.primary.main,
+      "&::before": {
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
+      },
+    },
+  };
+
+  return (
+    <>
+      {/* We only need the main resize handles for simplicity */}
+      {/* Right edge */}
+      <Box
+        sx={{
+          ...resizeHandleStyles,
+          top: "50%",
+          right: 0,
+          transform: "translateY(-50%)",
+          cursor: "ew-resize",
+          ...commonStyles,
+        }}
+        onMouseDown={(e) => onResize(e, "e")}
+      >
+        <Box sx={handleGrabberStyle} />
+      </Box>
+
+      {/* Bottom edge */}
+      <Box
+        sx={{
+          ...resizeHandleStyles,
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          cursor: "ns-resize",
+          ...commonStyles,
+        }}
+        onMouseDown={(e) => onResize(e, "s")}
+      >
+        <Box sx={handleGrabberStyle} />
+      </Box>
+
+      {/* Bottom-right corner */}
+      <Box
+        sx={{
+          ...resizeHandleStyles,
+          bottom: 0,
+          right: 0,
+          cursor: "nwse-resize",
+          ...commonStyles,
+        }}
+        onMouseDown={(e) => onResize(e, "se")}
+      >
+        <Box sx={handleGrabberStyle} />
+      </Box>
+    </>
+  );
+};
 
 const RegressionTester = () => {
   const theme = useTheme();
@@ -55,6 +173,8 @@ const RegressionTester = () => {
     notification,
     iframeLoading,
     sidebarOpen,
+    frameDimensions,
+    isResizing,
     handleOptionChange,
     goToNextCountry,
     goToPreviousCountry,
@@ -62,9 +182,29 @@ const RegressionTester = () => {
     copyUrlToClipboard,
     handleIframeLoad,
     toggleSidebar,
+    toggleResponsiveMode,
+    handleResize,
+    changeDeviceSize,
+    rotateDimensions,
   } = useRegressionTester();
 
   const [urlHovered, setUrlHovered] = useState(false);
+
+  const [sizeMenuAnchorEl, setSizeMenuAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
+
+  // Handler for device size menu
+  const handleSizeMenuOpen = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      setSizeMenuAnchorEl(event.currentTarget);
+    },
+    []
+  );
+
+  const handleSizeMenuClose = useCallback(() => {
+    setSizeMenuAnchorEl(null);
+  }, []);
 
   // Memoize the progress update handler to prevent infinite re-renders
   const handleProgressUpdate = useCallback((progressData: TestProgressData) => {
@@ -391,7 +531,7 @@ const RegressionTester = () => {
             }}
           >
             <IconButton onClick={toggleSidebar} size="small" sx={{ mr: 1 }}>
-              <Menu fontSize="small" />
+              <MenuIcon fontSize="small" />
             </IconButton>
             <Typography variant="subtitle2" sx={{ flex: 1 }}>
               {countryLanguageCodes[countryLanguageCode]?.pretty ||
@@ -408,6 +548,8 @@ const RegressionTester = () => {
             overflow: "hidden",
             width: "100%",
             height: sidebarOpen ? "100%" : "calc(100% - 48px)", // Account for the top toolbar when sidebar is closed
+            display: "flex",
+            flexDirection: "column",
             transition: theme.transitions.create(
               ["width", "height", "margin"],
               {
@@ -417,47 +559,186 @@ const RegressionTester = () => {
             ),
           }}
         >
-          {/* Loading indicator */}
-          <AnimatePresence>
-            {iframeLoading && (
-              <LoadingIndicator
-                message={`Loading ${
-                  countryLanguageCodes[countryLanguageCode]?.pretty || "Preview"
-                }...`}
-              />
-            )}
-          </AnimatePresence>
+          {/* Responsive Mode Controls */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              height: "40px",
+              px: 2,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              backgroundColor:
+                theme.palette.mode === "dark"
+                  ? "rgba(66, 66, 66, 0.2)"
+                  : "rgba(248, 248, 248, 0.8)",
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              {frameDimensions.isResponsiveMode ? (
+                <>
+                  <PhoneAndroid color="primary" fontSize="small" />
+                  <Typography variant="subtitle2" color="primary">
+                    Responsive Mode
+                  </Typography>
+                  <Chip
+                    label={`${Math.round(frameDimensions.width)}×${Math.round(
+                      frameDimensions.height
+                    )}`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{
+                      height: "22px",
+                      ml: 1,
+                      fontSize: "0.7rem",
+                      fontFamily: "monospace",
+                    }}
+                  />
+                  {frameDimensions.deviceName && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ ml: 1 }}
+                    >
+                      {frameDimensions.deviceName}
+                    </Typography>
+                  )}
+                </>
+              ) : (
+                <>
+                  <AspectRatio fontSize="small" />
+                  <Typography variant="subtitle2">Full Size</Typography>
+                </>
+              )}
+            </Stack>
+            <Stack direction="row" spacing={0.5}>
+              {frameDimensions.isResponsiveMode && (
+                <>
+                  <Tooltip title="Change device size">
+                    <IconButton size="small" onClick={handleSizeMenuOpen}>
+                      <PhoneAndroid fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Rotate dimensions">
+                    <IconButton size="small" onClick={rotateDimensions}>
+                      <ScreenRotationAlt fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+              <Tooltip
+                title={
+                  frameDimensions.isResponsiveMode
+                    ? "Exit responsive mode"
+                    : "Enter responsive mode"
+                }
+              >
+                <IconButton
+                  size="small"
+                  color={
+                    frameDimensions.isResponsiveMode ? "primary" : "default"
+                  }
+                  onClick={toggleResponsiveMode}
+                >
+                  <AspectRatio fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Box>
 
-          {/* The iframe with the component preview */}
-          {generatedUrl ? (
-            <iframe
-              src={generatedUrl}
-              style={{
-                border: "none",
-                width: "100%",
-                height: "100%",
-                display: "block",
-                backgroundColor:
-                  theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
-              }}
-              onLoad={handleIframeLoad}
-              title="Component Preview"
-            />
-          ) : (
+          {/* Responsive Frame Container */}
+          <Box
+            sx={{
+              flex: 1,
+              position: "relative",
+              overflow: "auto",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              p: frameDimensions.isResponsiveMode ? 4 : 0,
+              backgroundColor: frameDimensions.isResponsiveMode
+                ? theme.palette.mode === "dark"
+                  ? "#121212"
+                  : "#f5f5f5"
+                : "transparent",
+            }}
+          >
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "100%",
-                color: theme.palette.text.secondary,
+                position: "relative",
+                width: frameDimensions.isResponsiveMode
+                  ? frameDimensions.width
+                  : "100%",
+                height: frameDimensions.isResponsiveMode
+                  ? frameDimensions.height
+                  : "100%",
+                boxShadow: frameDimensions.isResponsiveMode
+                  ? theme.shadows[4]
+                  : "none",
+                overflow: "hidden",
+                transition: isResizing
+                  ? "none"
+                  : theme.transitions.create(
+                      ["width", "height", "box-shadow"],
+                      {
+                        duration: 200,
+                      }
+                    ),
+                border: frameDimensions.isResponsiveMode
+                  ? `1px solid ${theme.palette.divider}`
+                  : "none",
               }}
             >
-              <Typography variant="body2">
-                Please select a component and country to view the preview.
-              </Typography>
+              {/* Loading indicator */}
+              <AnimatePresence>
+                {iframeLoading && (
+                  <LoadingIndicator
+                    message={`Loading ${
+                      countryLanguageCodes[countryLanguageCode]?.pretty ||
+                      "Preview"
+                    }...`}
+                  />
+                )}
+              </AnimatePresence>
+
+              {/* The iframe with the component preview */}
+              {generatedUrl ? (
+                <iframe
+                  src={generatedUrl}
+                  style={{
+                    border: "none",
+                    width: "100%",
+                    height: "100%",
+                    display: "block",
+                    backgroundColor:
+                      theme.palette.mode === "dark" ? "#1E1E1E" : "#FFFFFF",
+                  }}
+                  onLoad={handleIframeLoad}
+                  title="Component Preview"
+                />
+              ) : (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  <Typography variant="body2">
+                    Please select a component and country to view the preview.
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Resize handles for responsive mode */}
+              {frameDimensions.isResponsiveMode && (
+                <SingleViewResizeHandles onResize={handleResize} />
+              )}
             </Box>
-          )}
+          </Box>
         </Box>
       </Box>
 
@@ -465,6 +746,7 @@ const RegressionTester = () => {
       <TestInstructions
         selectedOptions={selectedOptions}
         onProgressUpdate={handleProgressUpdate}
+        handleOptionChange={handleOptionChange}
       />
 
       {/* Notification snackbar */}
@@ -483,6 +765,14 @@ const RegressionTester = () => {
           {notification}
         </Alert>
       </Snackbar>
+
+      {/* Device Size Menu */}
+      <DeviceSizeMenu
+        anchorEl={sizeMenuAnchorEl}
+        currentWidth={frameDimensions.width}
+        onClose={handleSizeMenuClose}
+        onSelect={changeDeviceSize}
+      />
     </Box>
   );
 };

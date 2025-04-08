@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SelectedOptions } from '../types';
 import {
   countryLanguageCodes,
@@ -12,6 +12,15 @@ import {
   loadMultiboxFirstFrameConfig,
   defaultOptions
 } from '../utils/configStore';
+import { deviceSizes } from '../utils/deviceSizes';
+
+// Frame dimensions interface
+interface FrameDimensions {
+  width: number;
+  height: number;
+  isResponsiveMode: boolean;
+  deviceName?: string;
+}
 
 export const useRegressionTester = () => {
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>(defaultOptions);
@@ -21,6 +30,15 @@ export const useRegressionTester = () => {
   const [iframeLoading, setIframeLoading] = useState<boolean>(true);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
+  
+  // New states for responsive mode
+  const [frameDimensions, setFrameDimensions] = useState<FrameDimensions>({
+    width: window.innerWidth - 400, // Default width (accounting for sidebar)
+    height: window.innerHeight - 100, // Default height
+    isResponsiveMode: false,
+  });
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [resizeDirection, setResizeDirection] = useState<string | null>(null);
 
   // Get current country code
   const countryLanguageCode = Object.keys(countryLanguageCodes)[currentCountryIndex];
@@ -274,6 +292,125 @@ export const useRegressionTester = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Toggle responsive mode
+  const toggleResponsiveMode = useCallback(() => {
+    setFrameDimensions(prev => {
+      // Default to iPhone 12/13/14 size when enabling responsive mode
+      if (!prev.isResponsiveMode) {
+        const mobileDevice = deviceSizes.find(d => d.name === 'iPhone 12/13/14');
+        if (mobileDevice) {
+          return {
+            width: mobileDevice.width,
+            height: mobileDevice.height,
+            isResponsiveMode: true,
+            deviceName: mobileDevice.name
+          };
+        }
+        // Fallback if device not found
+        return {
+          width: 390,
+          height: 844,
+          isResponsiveMode: true,
+          deviceName: 'Mobile'
+        };
+      }
+      // When disabling responsive mode, go back to full size
+      return {
+        width: window.innerWidth - (sidebarOpen ? 400 : 50),
+        height: window.innerHeight - 100,
+        isResponsiveMode: false
+      };
+    });
+    
+    showNotification(frameDimensions.isResponsiveMode 
+      ? 'Exited responsive mode' 
+      : 'Entered responsive mode');
+  }, [frameDimensions.isResponsiveMode, sidebarOpen]);
+
+  // Handle resizing
+  const handleResize = useCallback((e: React.MouseEvent<Element>, direction: string) => {
+    e.preventDefault();
+    
+    setIsResizing(true);
+    setResizeDirection(direction);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startWidth = frameDimensions.width;
+    const startHeight = frameDimensions.height;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      moveEvent.preventDefault();
+
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+
+      // Calculate new dimensions based on resize direction
+      if (direction.includes('e')) {
+        newWidth = Math.max(320, startWidth + (moveEvent.clientX - startX));
+      }
+      if (direction.includes('w')) {
+        newWidth = Math.max(320, startWidth - (moveEvent.clientX - startX));
+      }
+      if (direction.includes('s')) {
+        newHeight = Math.max(568, startHeight + (moveEvent.clientY - startY));
+      }
+      if (direction.includes('n')) {
+        newHeight = Math.max(568, startHeight - (moveEvent.clientY - startY));
+      }
+
+      // Find if dimensions match a known device
+      const matchingDevice = deviceSizes.find(
+        device => Math.abs(device.width - newWidth) <= 5 && Math.abs(device.height - newHeight) <= 5
+      );
+
+      setFrameDimensions({
+        width: newWidth,
+        height: newHeight,
+        isResponsiveMode: true,
+        deviceName: matchingDevice?.name
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      setResizeDirection(null);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [frameDimensions.width, frameDimensions.height]);
+
+  // Change to specific device size
+  const changeDeviceSize = useCallback((width: number, height: number) => {
+    const device = deviceSizes.find(
+      d => d.width === width && d.height === height
+    );
+
+    setFrameDimensions({
+      width,
+      height,
+      isResponsiveMode: true,
+      deviceName: device?.name
+    });
+
+    showNotification(`Changed to ${device?.name || `${width}×${height}`}`);
+  }, []);
+
+  // Rotate dimensions
+  const rotateDimensions = useCallback(() => {
+    setFrameDimensions(prev => ({
+      width: prev.height,
+      height: prev.width,
+      isResponsiveMode: prev.isResponsiveMode,
+      deviceName: prev.deviceName ? `${prev.deviceName} (Rotated)` : undefined
+    }));
+    
+    showNotification('Rotated dimensions');
+  }, []);
+
   return {
     selectedOptions,
     countryLanguageCode,
@@ -282,6 +419,8 @@ export const useRegressionTester = () => {
     notification,
     iframeLoading,
     sidebarOpen,
+    frameDimensions,
+    isResizing,
     handleOptionChange,
     goToNextCountry,
     goToPreviousCountry,
@@ -289,5 +428,9 @@ export const useRegressionTester = () => {
     copyUrlToClipboard,
     handleIframeLoad,
     toggleSidebar,
+    toggleResponsiveMode,
+    handleResize,
+    changeDeviceSize,
+    rotateDimensions,
   };
 };

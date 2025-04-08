@@ -13,6 +13,7 @@ export const defaultOptions: SelectedOptions = {
   uscEnv: 'uat',
   brand: 'toyota',
   variantBrand: 'toyota',
+  device: 'desktop', // Default to desktop view
 };
 
 // Type for saved configuration

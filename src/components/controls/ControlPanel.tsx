@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   FormControl,
   InputLabel,
@@ -10,11 +10,11 @@ import {
   Paper,
   SelectChangeEvent,
   Stack,
-  useTheme
-} from '@mui/material';
-import { TuneOutlined } from '@mui/icons-material';
-import { SelectedOptions } from '../../types';
-import { countryLanguageCodes } from '../../utils';
+  useTheme,
+} from "@mui/material";
+import { TuneOutlined } from "@mui/icons-material";
+import { SelectedOptions } from "../../types";
+import { countryLanguageCodes } from "../../utils";
 
 interface ControlPanelProps {
   selectedOptions: SelectedOptions;
@@ -28,7 +28,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   countryLanguageCode,
 }) => {
   const theme = useTheme();
-  
+
   // Get country-specific features
   const countrySettings = countryLanguageCodes[countryLanguageCode] || {};
   const hasLexus = countrySettings.hasLexus || false;
@@ -46,14 +46,22 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       elevation={1}
       sx={{
         p: 2,
-        backgroundColor: 'background.paper',
+        backgroundColor: "background.paper",
         borderRadius: 2,
-        transition: theme.transitions.create(['background-color', 'box-shadow']),
+        transition: theme.transitions.create([
+          "background-color",
+          "box-shadow",
+        ]),
       }}
     >
       <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
         <TuneOutlined color="primary" fontSize="small" />
-        <Typography variant="subtitle2" color="primary" fontWeight="medium" sx={{ flex: 1 }}>
+        <Typography
+          variant="subtitle2"
+          color="primary"
+          fontWeight="medium"
+          sx={{ flex: 1 }}
+        >
           Component Settings
         </Typography>
       </Stack>
@@ -70,7 +78,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={selectedOptions.environment}
             label="Environment"
             onChange={handleChange}
-            sx={{ bgcolor: 'background.paper' }}
+            sx={{ bgcolor: "background.paper" }}
           >
             <MenuItem value="localhost">Localhost</MenuItem>
             <MenuItem value="dev">Development</MenuItem>
@@ -91,7 +99,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={selectedOptions.component}
             label="Component"
             onChange={handleChange}
-            sx={{ bgcolor: 'background.paper' }}
+            sx={{ bgcolor: "background.paper" }}
           >
             <MenuItem value="car-filter">Car Filter</MenuItem>
             <MenuItem value="used-stock-cars">Used/Stock Cars</MenuItem>
@@ -100,7 +108,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <FormHelperText>Select the component to test</FormHelperText>
         </FormControl>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           {/* USC Context */}
           <FormControl fullWidth size="small">
             <InputLabel id="usc-context-label">USC Context</InputLabel>
@@ -111,27 +119,27 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.uscContext}
               label="USC Context"
               onChange={handleChange}
-              disabled={selectedOptions.component === 'used-stock-cars-pdf'}
-              sx={{ bgcolor: 'background.paper' }}
+              disabled={selectedOptions.component === "used-stock-cars-pdf"}
+              sx={{ bgcolor: "background.paper" }}
             >
               <MenuItem value="used" disabled={!hasUsed}>
-                Used {!hasUsed && '(Not Available)'}
+                Used {!hasUsed && "(Not Available)"}
               </MenuItem>
               <MenuItem value="stock" disabled={!hasStock}>
-                Stock {!hasStock && '(Not Available)'}
+                Stock {!hasStock && "(Not Available)"}
               </MenuItem>
             </Select>
             <FormHelperText>
-              {!hasStock && selectedOptions.uscContext === 'used' 
-                ? 'Stock is not available for this country' 
-                : !hasUsed && selectedOptions.uscContext === 'stock'
-                ? 'Used is not available for this country'
-                : 'Used or Stock cars'}
+              {!hasStock && selectedOptions.uscContext === "used"
+                ? "Stock is not available for this country"
+                : !hasUsed && selectedOptions.uscContext === "stock"
+                ? "Used is not available for this country"
+                : "Used or Stock cars"}
             </FormHelperText>
           </FormControl>
 
           {/* USC Environment */}
-          <FormControl fullWidth size="small"> 
+          <FormControl fullWidth size="small">
             <InputLabel id="usc-env-label">USC Environment</InputLabel>
             <Select
               labelId="usc-env-label"
@@ -140,7 +148,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.uscEnv}
               label="USC Environment"
               onChange={handleChange}
-              sx={{ bgcolor: 'background.paper' }}
+              sx={{ bgcolor: "background.paper" }}
             >
               <MenuItem value="uat">UAT</MenuItem>
               <MenuItem value="production">Production</MenuItem>
@@ -149,7 +157,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </FormControl>
         </Stack>
 
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
           {/* Brand Selection */}
           <FormControl fullWidth size="small">
             <InputLabel id="brand-label">Brand</InputLabel>
@@ -160,17 +168,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.brand}
               label="Brand"
               onChange={handleChange}
-              sx={{ bgcolor: 'background.paper' }}
+              sx={{ bgcolor: "background.paper" }}
             >
               <MenuItem value="toyota">Toyota</MenuItem>
               <MenuItem value="lexus" disabled={!hasLexus}>
-                Lexus {!hasLexus && '(Not Available)'}
+                Lexus {!hasLexus && "(Not Available)"}
               </MenuItem>
             </Select>
             <FormHelperText>
-              {!hasLexus && selectedOptions.brand === 'toyota' 
-                ? 'Lexus is not available for this country' 
-                : 'Brand selection'}
+              {!hasLexus && selectedOptions.brand === "toyota"
+                ? "Lexus is not available for this country"
+                : "Brand selection"}
             </FormHelperText>
           </FormControl>
 
@@ -184,12 +192,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.variantBrand}
               label="Variant Brand"
               onChange={handleChange}
-              sx={{ bgcolor: 'background.paper' }}
+              sx={{ bgcolor: "background.paper" }}
             >
               <MenuItem value="toyota">Toyota</MenuItem>
-              <MenuItem value="lexus">
-                Lexus
-              </MenuItem>
+              <MenuItem value="lexus">Lexus</MenuItem>
             </Select>
             <FormHelperText>Variant brand for the component</FormHelperText>
           </FormControl>

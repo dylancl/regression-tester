@@ -31,6 +31,15 @@ export interface TestScenarioMap {
 
 // Helper function to generate a key for the component configuration
 export const getComponentKey = (options: SelectedOptions): string => {
+  // Include device property if it exists, otherwise default to 'desktop'
+  const device = options.device || 'desktop';
+  
+  // For mobile test scenarios, we include the device in the key
+  if (device === 'mobile') {
+    return `${options.component}-${options.brand}-${options.uscContext}-${device}`;
+  }
+  
+  // Default (desktop) behavior remains the same
   return `${options.component}-${options.brand}-${options.uscContext}`;
 };
 
@@ -63,8 +72,8 @@ export const fetchTestScenariosFromSheets = async (): Promise<TestScenarioMap> =
 };
 
 // Function to parse the sheet format
-// Components sheet: ComponentID | Component | Brand | Context | Title | Description | Tags
-// Steps sheet: ComponentID | ScenarioID | StepID | Instruction | ExpectedResult | Status
+// Components sheet: ComponentID | Component | Brand | Context | Title | Description | Tags | Device (optional)
+// Steps sheet: ComponentID | ScenarioID | StepID | Instruction | ExpectedResult | Status | Device (optional)
 const parseNewSheetFormat = (componentsData: any, stepsData: any): TestScenarioMap => {
   const componentsRows = componentsData.values || [];
   const stepsRows = stepsData.values || [];
@@ -78,6 +87,7 @@ const parseNewSheetFormat = (componentsData: any, stepsData: any): TestScenarioM
     key: string;
     title: string;
     description: string;
+    device?: string;
   }> = {};
   
   // First, process components sheet (skip header row)
@@ -86,13 +96,17 @@ const parseNewSheetFormat = (componentsData: any, stepsData: any): TestScenarioM
     
     if (row.length < 6) continue; // Skip incomplete rows
     
-    const [componentId, component, brand, context, title, description] = row;
-    const key = `${component}-${brand}-${context}`;
+    const [componentId, component, brand, context, title, description, _tags, device = 'desktop'] = row;
+    // Include device in the component key if it's specified as 'mobile'
+    const key = device === 'mobile' 
+      ? `${component}-${brand}-${context}-${device}`
+      : `${component}-${brand}-${context}`;
     
     componentsMap[componentId] = {
       key,
       title,
-      description
+      description,
+      device
     };
     
     // Initialize the component's scenario array if it doesn't exist
@@ -107,24 +121,40 @@ const parseNewSheetFormat = (componentsData: any, stepsData: any): TestScenarioM
     
     if (row.length < 5) continue; // Skip incomplete rows
     
-    const [componentId, scenarioId, stepId, instruction, expectedResult] = row;
+    const [componentId, scenarioId, stepId, instruction, expectedResult, _status, device = 'desktop'] = row;
     
     if (!componentsMap[componentId]) continue; // Skip if component not found
     
+    // Check if this component has an explicitly specified device in the component row
     const { key, title, description } = componentsMap[componentId];
     
+    // Only use device from Steps sheet if not specified in Components sheet
+    const effectiveDevice = componentsMap[componentId].device || device;
+    
+    // Determine which scenario array this step belongs to
+    const scenarioKey = effectiveDevice === 'mobile' && !key.includes('-mobile')
+      ? `${key}-mobile` // Add mobile suffix if needed
+      : key;
+    
+    // Initialize the scenario array if it doesn't exist
+    if (!scenarios[scenarioKey]) {
+      scenarios[scenarioKey] = [];
+    }
+    
     // Check if this scenario already exists
-    let scenario = scenarios[key].find(s => s.id === scenarioId);
+    let scenario = scenarios[scenarioKey].find(s => s.id === scenarioId);
     
     if (!scenario) {
       // Create new scenario
       scenario = {
         id: scenarioId,
-        title: `${title} - ${scenarioId}`, // Include scenario ID in title for clarity
+        title: effectiveDevice === 'mobile' 
+          ? `${title} - Mobile - ${scenarioId}` // Include "Mobile" in title for clarity
+          : `${title} - ${scenarioId}`,
         description,
         steps: []
       };
-      scenarios[key].push(scenario);
+      scenarios[scenarioKey].push(scenario);
     }
     
     // Add the step to the scenario

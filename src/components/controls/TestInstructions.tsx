@@ -26,6 +26,8 @@ import {
   Paper,
   Snackbar,
   useMediaQuery,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import {
   ExpandMore,
@@ -42,6 +44,8 @@ import {
   Block,
   ChevronRight,
   FileDownload,
+  PhoneIphone,
+  Computer,
 } from "@mui/icons-material";
 import { SelectedOptions } from "../../types";
 import {
@@ -65,6 +69,7 @@ export interface TestProgressData {
 interface TestInstructionsProps {
   selectedOptions: SelectedOptions;
   onProgressUpdate?: (progressData: TestProgressData) => void;
+  handleOptionChange?: (name: string, value: string) => void; // Add option change handler
 }
 
 // Simple Table component for the guide dialog
@@ -132,6 +137,7 @@ const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => {
 const TestInstructions: React.FC<TestInstructionsProps> = ({
   selectedOptions,
   onProgressUpdate,
+  handleOptionChange, // Add the handler parameter
 }) => {
   const theme = useTheme();
   const [expandedScenario, setExpandedScenario] = useState<string | null>(null);
@@ -972,9 +978,114 @@ const TestInstructions: React.FC<TestInstructionsProps> = ({
           <Typography variant="subtitle1" fontWeight="medium">
             {selectedOptions.component} - {selectedOptions.brand}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {selectedOptions.uscContext === "used" ? "Used Cars" : "Stock Cars"}
           </Typography>
+
+          {/* Device Type Toggle */}
+          {handleOptionChange && (
+            <Box
+              sx={{
+                mt: 2,
+                mb: 1,
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.06)"
+                    : "rgba(0, 0, 0, 0.03)",
+                borderRadius: 2,
+                p: 1.5,
+                border: `1px solid ${theme.palette.divider}`,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  color="text.primary"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontWeight: 500,
+                  }}
+                >
+                  Device Type
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  {selectedOptions.device === "mobile"
+                    ? "Mobile test scenarios"
+                    : "Desktop test scenarios"}
+                </Typography>
+              </Box>
+
+              <ToggleButtonGroup
+                value={selectedOptions.device || "desktop"}
+                exclusive
+                onChange={(_e, newDevice) => {
+                  if (newDevice !== null && handleOptionChange) {
+                    handleOptionChange("device", newDevice);
+                    setNotification(`Test scenarios for ${newDevice} view`);
+                  }
+                }}
+                size="small"
+                aria-label="device type"
+                fullWidth
+                sx={{
+                  ".MuiToggleButtonGroup-grouped": {
+                    borderRadius: "8px !important",
+                    border: `1px solid ${theme.palette.divider} !important`,
+                    m: 0.5,
+                    py: 0.75,
+                    flex: 1,
+                    "&.Mui-selected": {
+                      backgroundColor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(25, 118, 210, 0.3)"
+                          : "rgba(25, 118, 210, 0.12)",
+                      color: theme.palette.primary.main,
+                      fontWeight: "bold",
+                      boxShadow:
+                        theme.palette.mode === "dark"
+                          ? "0 0 8px rgba(25, 118, 210, 0.4)"
+                          : "0 0 8px rgba(25, 118, 210, 0.2)",
+                      "&:hover": {
+                        backgroundColor:
+                          theme.palette.mode === "dark"
+                            ? "rgba(25, 118, 210, 0.35)"
+                            : "rgba(25, 118, 210, 0.15)",
+                      },
+                    },
+                    "&:hover": {
+                      backgroundColor:
+                        theme.palette.mode === "dark"
+                          ? "rgba(255, 255, 255, 0.08)"
+                          : "rgba(0, 0, 0, 0.04)",
+                      transition: "all 0.2s ease",
+                    },
+                    transition: "all 0.2s ease",
+                  },
+                }}
+              >
+                <ToggleButton value="desktop" aria-label="desktop view">
+                  <Computer fontSize="small" sx={{ mr: 1 }} />
+                  <Typography variant="body2">Desktop</Typography>
+                </ToggleButton>
+                <ToggleButton value="mobile" aria-label="mobile view">
+                  <PhoneIphone fontSize="small" sx={{ mr: 1 }} />
+                  <Typography variant="body2">Mobile</Typography>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          )}
         </Box>
 
         {/* Overall completion */}
