@@ -7,7 +7,6 @@ import {
   Stack,
   useTheme,
   Tooltip,
-  Divider,
   useMediaQuery,
 } from "@mui/material";
 import {

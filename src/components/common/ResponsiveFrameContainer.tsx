@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import LoadingIndicator from "../controls/LoadingIndicator";
 
 interface ResponsiveFrameContainerProps {
