@@ -1,153 +1,160 @@
-import { CountryLanguageCodes, SelectedOptions } from '../types';
+import { CountryLanguageCodes, SelectedOptions } from "../types";
 
 // Country language code map, organized by NMSC (National Marketing and Sales Company)
 export const countryLanguageCodes: CountryLanguageCodes = {
-  'fr/fr': {
-    pretty: 'France',
+  "fr/fr": {
+    pretty: "France",
     hasLexus: true,
     hasUsed: true,
-    nmsc: 'TFR',
+    nmsc: "TFR",
   },
-  'es/es': {
-    pretty: 'Spain',
+  "es/es": {
+    pretty: "Spain",
     hasLexus: true,
     hasUsed: true,
-    nmsc: 'TES',
+    nmsc: "TES",
   },
-  'se/sv': {
-    pretty: 'Sweden',
-    hasLexus: true,
-    hasStock: true,
-    hasUsed: true,
-    nmsc: 'TSW',
-  },
-  'dk/da': {
-    pretty: 'Denmark',
+  "se/sv": {
+    pretty: "Sweden",
     hasLexus: true,
     hasStock: true,
     hasUsed: true,
-    nmsc: 'TDK',
+    nmsc: "TSW",
   },
-  'fi/fi': {
-    pretty: 'Finland',
-    hasLexus: true,
-    hasUsed: true,
-    nmsc: 'TAF',
-  },
-  'be/nl': {
-    pretty: 'Belgium (Dutch)',
-    hasUsed: true,
-    nmsc: 'TBEL',
-  },
-  'be/fr': {
-    pretty: 'Belgium (French)',
-    hasUsed: true,
-    nmsc: 'TBEL',
-  },
-  'be/lu': {
-    pretty: 'Belgium (Luxembourg)',
-    hasUsed: true,
-    nmsc: 'TBEL',
-  },
-  'gr/el': {
-    pretty: 'Greece',
-    hasUsed: true,
-    nmsc: 'THEL',
-  },
-  'it/it': {
-    pretty: 'Italy',
-    hasLexus: true,
-    hasUsed: true,
-    nmsc: 'TMI',
-  },
-  'ro/ro': {
-    pretty: 'Romania',
-    hasStock: true,
-    hasUsed: true,
-    nmsc: 'TROM',
-  },
-  'bg/bg': {
-    pretty: 'Bulgaria',
-    hasStock: true,
-    hasUsed: true,
-    nmsc: 'TBG',
-  },
-  'tr/tr': {
-    pretty: 'Turkey',
-    hasUsed: true,
-    nmsc: 'TTMS',
-  },
-  'de/de': {
-    pretty: 'Germany',
+  "dk/da": {
+    pretty: "Denmark",
     hasLexus: true,
     hasStock: true,
     hasUsed: true,
-    nmsc: 'TDG',
+    nmsc: "TDK",
   },
-  'si/sl': {
-    pretty: 'Slovenia',
-    hasUsed: true,
-    nmsc: 'TAD',
-  },
-  'rs/sr': {
-    pretty: 'Serbia',
-    hasUsed: true,
-    nmsc: 'TAD',
-  },
-  'hr/hr': {
-    pretty: 'Croatia',
-    hasUsed: true,
-    nmsc: 'TAD',
-  },
-  'ba/hr': {
-    pretty: 'Bosnia and Herzegovina',
-    hasUsed: true,
-    nmsc: 'TAD',
-  },
-  'ee/et': {
-    pretty: 'Estonia',
+  "fi/fi": {
+    pretty: "Finland",
     hasLexus: true,
     hasUsed: true,
-    nmsc: 'TBA',
+    nmsc: "TAF",
   },
-  'lv/lv': {
-    pretty: 'Latvia',
+  "be/nl": {
+    pretty: "Belgium (Dutch)",
+    hasUsed: true,
+    nmsc: "TBEL",
+  },
+  "be/fr": {
+    pretty: "Belgium (French)",
+    hasUsed: true,
+    nmsc: "TBEL",
+  },
+  "be/lu": {
+    pretty: "Belgium (Luxembourg)",
+    hasUsed: true,
+    nmsc: "TBEL",
+  },
+  "gr/el": {
+    pretty: "Greece",
+    hasUsed: true,
+    nmsc: "THEL",
+  },
+  "it/it": {
+    pretty: "Italy",
     hasLexus: true,
     hasUsed: true,
-    nmsc: 'TBA',
+    nmsc: "TMI",
   },
-  'lt/lt': {
-    pretty: 'Lithuania',
+  "ro/ro": {
+    pretty: "Romania",
+    hasStock: true,
+    hasUsed: true,
+    nmsc: "TROM",
+  },
+  "bg/bg": {
+    pretty: "Bulgaria",
+    hasStock: true,
+    hasUsed: true,
+    nmsc: "TBG",
+  },
+  "tr/tr": {
+    pretty: "Turkey",
+    hasUsed: true,
+    nmsc: "TTMS",
+  },
+  "de/de": {
+    pretty: "Germany",
+    hasLexus: true,
+    hasStock: true,
+    hasUsed: true,
+    nmsc: "TDG",
+  },
+  "si/sl": {
+    pretty: "Slovenia",
+    hasUsed: true,
+    nmsc: "TAD",
+  },
+  "rs/sr": {
+    pretty: "Serbia",
+    hasUsed: true,
+    nmsc: "TAD",
+  },
+  "hr/hr": {
+    pretty: "Croatia",
+    hasUsed: true,
+    nmsc: "TAD",
+  },
+  "ba/hr": {
+    pretty: "Bosnia and Herzegovina",
+    hasUsed: true,
+    nmsc: "TAD",
+  },
+  "ee/et": {
+    pretty: "Estonia",
     hasLexus: true,
     hasUsed: true,
-    nmsc: 'TBA',
+    nmsc: "TBA",
   },
-  'az/az': {
-    pretty: 'Azerbaijan',
+  "lv/lv": {
+    pretty: "Latvia",
+    hasLexus: true,
     hasUsed: true,
-    nmsc: 'TCA',
+    nmsc: "TBA",
   },
-  'ge/ka': {
-    pretty: 'Georgia',
+  "lt/lt": {
+    pretty: "Lithuania",
+    hasLexus: true,
     hasUsed: true,
-    nmsc: 'TCA',
+    nmsc: "TBA",
   },
-  'is/is': {
-    pretty: 'Iceland',
+  "az/az": {
+    pretty: "Azerbaijan",
     hasUsed: true,
-    nmsc: 'TIC',
+    nmsc: "TCA",
   },
-  'cy/en': {
-    pretty: 'Cyprus',
+  "ge/ka": {
+    pretty: "Georgia",
     hasUsed: true,
-    nmsc: 'TCY',
+    nmsc: "TCA",
   },
-  'gb/en': {
-    pretty: 'United Kingdom',
-    nmsc: 'TGB',
+  "is/is": {
+    pretty: "Iceland",
+    hasUsed: true,
+    nmsc: "TIC",
+  },
+  "cy/en": {
+    pretty: "Cyprus",
+    hasUsed: true,
+    nmsc: "TCY",
+  },
+  "gb/en": {
+    pretty: "United Kingdom",
+    nmsc: "TGB",
     hasLexus: true,
     hasStock: true,
     hasUsed: false,
+  },
+  "at/de": {
+    pretty: "Austria",
+    nmsc: "TAT",
+    hasLexus: false,
+    hasStock: false,
+    hasUsed: true,
   },
 };
 
@@ -155,7 +162,7 @@ export const countryLanguageCodes: CountryLanguageCodes = {
  * Remove trailing slash and whitespace from a URL
  */
 export const removeLastSlashAndWhitespace = (url: string): string =>
-  url.replace(/\/\s*$/, '');
+  url.replace(/\/\s*$/, "");
 
 /**
  * Build a query string from selected options
@@ -163,7 +170,7 @@ export const removeLastSlashAndWhitespace = (url: string): string =>
 export const buildQueryString = (selectedOptions: SelectedOptions): string => {
   return Object.keys(selectedOptions)
     .map((key) => `${key}=${selectedOptions[key]}`)
-    .join('&');
+    .join("&");
 };
 
 /**
@@ -173,27 +180,23 @@ export const generateUrl = (
   selectedOptions: SelectedOptions,
   countryLanguageCode: string
 ): string => {
-  const {
-    component,
-    environment,
-    ...rest
-  } = selectedOptions;
+  const { component, environment, ...rest } = selectedOptions;
 
   let url: string;
-  let environmentString: string = '';
+  let environmentString: string = "";
 
   // Build the base URL based on environment
   switch (environment) {
-    case 'localhost':
+    case "localhost":
       url = `http://localhost:5001/${countryLanguageCode}`;
       break;
-    case 'dev':
-    case 'acc':
-    case 'prev':
+    case "dev":
+    case "acc":
+    case "prev":
       environmentString = environment;
       url = `https://usc-webcomponents${environmentString}.toyota-europe.com/${countryLanguageCode}`;
       break;
-    case 'prod':
+    case "prod":
       url = `https://usc-webcomponents.toyota-europe.com/${countryLanguageCode}`;
       break;
     default:
@@ -204,7 +207,7 @@ export const generateUrl = (
   const restOptions = { ...rest };
 
   // For car-filter, we need to use uscContext as carFilter
-  if (component === 'car-filter') {
+  if (component === "car-filter") {
     restOptions.carFilter = restOptions.uscContext;
     delete restOptions.uscContext;
     url += `/car-filter?${buildQueryString(restOptions)}`;
@@ -224,14 +227,15 @@ export const parseUrlParams = (): Record<string, string> => {
   const selectedOptions: Record<string, string> = {};
 
   // Special handling for country parameter which may contain a slash
-  const countryParam = params.get('country');
+  const countryParam = params.get("country");
   if (countryParam) {
-    selectedOptions['country'] = countryParam;
+    selectedOptions["country"] = countryParam;
   }
 
   // Process other parameters
   params.forEach((value, key) => {
-    if (key !== 'country') { // Skip country since we already handled it
+    if (key !== "country") {
+      // Skip country since we already handled it
       selectedOptions[key] = value;
     }
   });
@@ -261,10 +265,12 @@ export const createUrlWithParams = (
   const queryString = buildQueryString(queryParams);
 
   // Get the base path from Vite environment
-  const basePath = import.meta.env.BASE_URL || '/';
+  const basePath = import.meta.env.BASE_URL || "/";
 
   // Create URL with the base path included
-  return `${removeLastSlashAndWhitespace(window.location.origin)}${basePath}?${queryString}`;
+  return `${removeLastSlashAndWhitespace(
+    window.location.origin
+  )}${basePath}?${queryString}`;
 };
 
 /**
@@ -309,20 +315,20 @@ export const getPrettyString = (
   result.push({
     text: country.pretty,
     style: { bold: true },
-    separator: ' | '
+    separator: " | ",
   });
 
   result.push({
     text: brand,
     style: { small: true },
-    separator: ' | '
+    separator: " | ",
   });
 
-  if (component) {;
+  if (component) {
     result.push({
       text: component,
       style: { small: true },
-      separator: ' | '
+      separator: " | ",
     });
   }
 
@@ -330,21 +336,21 @@ export const getPrettyString = (
     result.push({
       text: uscContext,
       style: { small: true },
-      separator: ' | '
+      separator: " | ",
     });
   }
 
   if (environment) {
-    const environmentName = environment === 'localhost' ? 'local' : environment;
+    const environmentName = environment === "localhost" ? "local" : environment;
     result.push({
       text: environmentName,
       style: { small: true },
-      separator: ' | '
+      separator: " | ",
     });
   }
 
   if (uscEnv) {
-    const envName = uscEnv === 'production' ? 'prod' : uscEnv;
+    const envName = uscEnv === "production" ? "prod" : uscEnv;
     result.push({
       text: envName,
       style: { small: true },
@@ -352,4 +358,4 @@ export const getPrettyString = (
   }
 
   return result.filter((item) => Boolean(item.text)) as PrettyStringType[];
-}
+};
