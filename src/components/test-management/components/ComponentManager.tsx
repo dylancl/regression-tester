@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ComponentCard from "./ComponentCard";
 import ComponentForm from "./ComponentForm";
 import SearchAndFilterBar from "./SearchAndFilterBar";
-import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
+import DeleteConfirmationDialog from "../../common/DeleteConfirmationDialog";
 import { useComponentFilters } from "../../../hooks/useComponentFilters";
 import { useComponentForm } from "../../../hooks/useComponentForm";
 
@@ -41,6 +41,7 @@ const ComponentManager: React.FC<ComponentManagerProps> = ({
   // Component form management
   const {
     currentComponent,
+    setCurrentComponent,
     isEditing,
     formErrors,
     dialogOpen,
@@ -59,7 +60,7 @@ const ComponentManager: React.FC<ComponentManagerProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleConfirmDelete = (component: ComponentDocument) => {
-    handleOpenDialog(component);
+    setCurrentComponent(component);
     setDeleteDialogOpen(true);
   };
 
@@ -182,10 +183,12 @@ const ComponentManager: React.FC<ComponentManagerProps> = ({
 
       <AnimatePresence>
         {deleteDialogOpen && (
-          <ConfirmDeleteDialog
+          <DeleteConfirmationDialog
             open={deleteDialogOpen}
             title="Confirm Deletion"
             itemName={currentComponent?.title || ""}
+            itemType="component"
+            additionalWarning="This will also delete all scenarios and test steps associated with this component."
             onClose={() => setDeleteDialogOpen(false)}
             onConfirm={handleDelete}
           />

@@ -17,7 +17,7 @@ import useTestStepForm from "../../../hooks/useTestStepForm";
 import useDragAndDrop from "../../../hooks/useDragAndDrop";
 import SortableTestStepItem from "./SortableTestStepItem";
 import TestStepForm from "./TestStepForm";
-import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import DeleteConfirmationDialog from "../../common/DeleteConfirmationDialog";
 import EmptyState from "./EmptyState";
 import { TestStepDocument } from "../../../firebase/firestore";
 
@@ -44,6 +44,7 @@ const TestStepManager: React.FC<TestStepManagerProps> = ({
 
   const {
     currentStep,
+    setCurrentStep,
     isEditing,
     formErrors,
     dialogOpen,
@@ -67,7 +68,7 @@ const TestStepManager: React.FC<TestStepManagerProps> = ({
   };
 
   const handleDeleteClick = (step: TestStepDocument) => {
-    openEditDialog(step); // This just sets the currentStep, we're not actually editing
+    setCurrentStep(step);
     setDeleteDialogOpen(true);
   };
 
@@ -203,8 +204,9 @@ const TestStepManager: React.FC<TestStepManagerProps> = ({
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
-        onDelete={handleDelete}
-        testStep={currentStep}
+        onConfirm={handleDelete}
+        itemName={currentStep?.instruction || ""}
+        itemType="test step"
         loading={loading}
       />
     </Box>

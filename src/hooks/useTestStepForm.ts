@@ -7,7 +7,25 @@ export interface FormErrors {
   expectedResult?: string;
 }
 
-export const useTestStepForm = () => {
+interface UseTestStepForm {
+  currentStep: Partial<TestStepDocument> | null;
+  setCurrentStep: React.Dispatch<
+    React.SetStateAction<Partial<TestStepDocument> | null>
+  >;
+  isEditing: boolean;
+  formErrors: FormErrors;
+  dialogOpen: boolean;
+  openCreateDialog: (defaultValues: Partial<TestStepDocument>) => void;
+  openEditDialog: (step: TestStepDocument) => void;
+  closeDialog: () => void;
+  handleFormChange: (
+    e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+  ) => void;
+  validateForm: () => boolean;
+  setDeviceType: (isMobile: boolean) => void;
+}
+
+export const useTestStepForm = (): UseTestStepForm => {
   const [currentStep, setCurrentStep] =
     useState<Partial<TestStepDocument> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -73,6 +91,7 @@ export const useTestStepForm = () => {
 
   return {
     currentStep,
+    setCurrentStep,
     isEditing,
     formErrors,
     dialogOpen,

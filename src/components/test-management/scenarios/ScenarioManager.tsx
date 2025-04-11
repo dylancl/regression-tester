@@ -12,7 +12,7 @@ import { ScenarioDocument } from "../../../firebase/firestore";
 import { useScenarioManager } from "../../../hooks/useScenarioManager";
 import ScenarioCard from "./ScenarioCard";
 import ScenarioForm from "./ScenarioForm";
-import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import DeleteConfirmationDialog from "../../common/DeleteConfirmationDialog";
 import EmptyState from "./EmptyState";
 
 interface ScenarioManagerProps {
@@ -115,7 +115,9 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         loading={loading}
-        scenario={currentScenario}
+        itemName={currentScenario?.title || ""}
+        itemType="scenario"
+        additionalWarning="This will also delete all test steps associated with this scenario."
         onClose={closeDeleteDialog}
         onConfirm={executeDelete}
       />

@@ -8,6 +8,9 @@ import { SelectChangeEvent } from "@mui/material";
 
 interface UseComponentFormReturn {
   currentComponent: Partial<ComponentDocument> | null;
+  setCurrentComponent: React.Dispatch<
+    React.SetStateAction<Partial<ComponentDocument> | null>
+  >;
   isEditing: boolean;
   formErrors: Record<string, string>;
   dialogOpen: boolean;
@@ -142,6 +145,7 @@ export const useComponentForm = (
 
   return {
     currentComponent,
+    setCurrentComponent,
     isEditing,
     formErrors,
     dialogOpen,
