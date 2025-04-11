@@ -1,15 +1,10 @@
+import { lazy, Suspense } from "react";
 import { ThemeProvider as MuiThemeProvider, CssBaseline } from "@mui/material";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { createAppTheme } from "./theme";
 import MainLayout from "./layouts/MainLayout";
-import RegressionTester from "./components/RegressionTester";
-import MultiboxTester from "./components/MultiboxTester";
-import EnvironmentsOverview from "./components/EnvironmentsOverview";
-import CountriesOverview from "./components/CountriesOverview";
-import TestCaseManagement from "./components/TestCaseManagement";
-import PrintableReportPage from "./components/test-instructions/PrintableReportPage";
 import { ThemeProvider, useThemeContext } from "./contexts/ThemeContext";
-import PrintableTestReport from "./components/test-instructions/PrintableTestReport";
+import LoadingIndicator from "./components/controls/LoadingIndicator";
 
 function App() {
   return (
@@ -24,6 +19,24 @@ const ThemedApp = () => {
   const { mode } = useThemeContext();
   const appTheme = createAppTheme(mode);
 
+  // Lazy load components to optimize performance
+  // This will split the code into separate chunks for each component
+  // and load them only when needed
+  const RegressionTester = lazy(() => import("./components/RegressionTester"));
+  const MultiboxTester = lazy(() => import("./components/MultiboxTester"));
+  const EnvironmentsOverview = lazy(
+    () => import("./components/EnvironmentsOverview")
+  );
+  const CountriesOverview = lazy(
+    () => import("./components/CountriesOverview")
+  );
+  const TestCaseManagement = lazy(
+    () => import("./components/TestCaseManagement")
+  );
+  const PrintableReportPage = lazy(
+    () => import("./components/test-instructions/PrintableReportPage")
+  );
+
   // Get the base path from the Vite config
   const basename = import.meta.env.BASE_URL;
 
@@ -32,15 +45,24 @@ const ThemedApp = () => {
       <CssBaseline />
       <BrowserRouter basename={basename}>
         <MainLayout>
-          <Routes>
-            <Route path="/" element={<RegressionTester />} />
-            <Route path="/multibox" element={<MultiboxTester />} />
-            <Route path="/environments" element={<EnvironmentsOverview />} />
-            <Route path="/countries" element={<CountriesOverview />} />
-            <Route path="/test-management" element={<TestCaseManagement />} />
-            <Route path="/printable-report" element={<PrintableReportPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense
+            fallback={
+              <LoadingIndicator message="Application is starting up..." />
+            }
+          >
+            <Routes>
+              <Route path="/" element={<RegressionTester />} />
+              <Route path="/multibox" element={<MultiboxTester />} />
+              <Route path="/environments" element={<EnvironmentsOverview />} />
+              <Route path="/countries" element={<CountriesOverview />} />
+              <Route path="/test-management" element={<TestCaseManagement />} />
+              <Route
+                path="/printable-report"
+                element={<PrintableReportPage />}
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </MainLayout>
       </BrowserRouter>
     </MuiThemeProvider>
