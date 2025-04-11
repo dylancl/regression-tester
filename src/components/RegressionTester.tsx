@@ -5,7 +5,7 @@ import { useRegressionTester } from "../hooks/useRegressionTester";
 import { countryLanguageCodes } from "../utils";
 import TestInstructions, {
   TestProgressData,
-} from "./controls/TestInstructions";
+} from "./test-instructions/TestInstructions";
 import { useThemeContext } from "../contexts/ThemeContext";
 import NotificationSnackbar from "./common/NotificationSnackbar";
 import ConfigDrawer from "./common/ConfigDrawer";

@@ -37,8 +37,14 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+enum TabValue {
+  COMPONENTS = 0,
+  SCENARIOS = 1,
+  TEST_CASES = 2,
+}
+
 const TestCaseManagement: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(TabValue.COMPONENTS);
   const {
     components,
     loading,
@@ -117,30 +123,30 @@ const TestCaseManagement: React.FC = () => {
           </Box>
         ) : (
           <>
-            <TabPanel value={tabValue} index={0}>
+            <TabPanel value={tabValue} index={TabValue.COMPONENTS}>
               <ComponentManager
                 components={components}
                 onSelectComponent={(id) => {
                   setSelectedComponentId(id);
-                  setTabValue(1); // Switch to Scenarios tab
+                  setTabValue(TabValue.SCENARIOS);
                 }}
                 onComponentsChange={refreshComponents}
               />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={TabValue.SCENARIOS}>
               {selectedComponentId && (
                 <ScenarioManager
                   componentId={selectedComponentId}
                   onSelectScenario={(id) => {
                     setSelectedScenarioId(id);
-                    setTabValue(2); // Switch to Test Cases tab
+                    setTabValue(TabValue.TEST_CASES);
                   }}
                 />
               )}
             </TabPanel>
 
-            <TabPanel value={tabValue} index={2}>
+            <TabPanel value={tabValue} index={TabValue.TEST_CASES}>
               {selectedComponentId && selectedScenarioId && (
                 <TestStepManager
                   componentId={selectedComponentId}

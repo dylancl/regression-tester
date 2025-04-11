@@ -19,7 +19,7 @@ import { SelectedOptions } from "../../types";
 import CountrySelector from "../controls/CountrySelector";
 import ControlPanel from "../controls/ControlPanel";
 import ProgressTracker from "../controls/ProgressTracker";
-import { TestProgressData } from "../controls/TestInstructions";
+import { TestProgressData } from "../test-instructions/TestInstructions";
 
 interface ConfigDrawerProps {
   /**

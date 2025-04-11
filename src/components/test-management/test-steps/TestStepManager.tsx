@@ -155,7 +155,7 @@ const TestStepManager: React.FC<TestStepManagerProps> = ({
       ) : testSteps.length === 0 ? (
         <EmptyState onAddClick={handleOpenAddDialog} />
       ) : (
-        <Box sx={{ flexGrow: 1, overflow: "auto", px: 1, py: 0.5 }}>
+        <Box sx={{ flexGrow: 1, overflow: "auto", px: 1, pt: 1, pb: 5 }}>
           {reordering && (
             <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
               <CircularProgress size={24} />

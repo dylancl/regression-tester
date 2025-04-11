@@ -99,7 +99,6 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
         </Grid>
       )}
 
-      {/* Scenario Form Dialog */}
       <ScenarioForm
         open={dialogOpen}
         isEditing={isEditing}
@@ -111,7 +110,6 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
         onChange={handleChange}
       />
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         loading={loading}
