@@ -88,6 +88,18 @@ const TestInstructions: React.FC<TestInstructionsProps> = ({
     navigate("/test-case-management");
   }, [navigate]);
 
+  // Navigate to printable report view
+  const navigateToPrintableReport = useCallback(() => {
+    navigate("/printable-report", {
+      state: {
+        selectedOptions,
+        stepStatuses,
+        scenarios,
+        progressData,
+      },
+    });
+  }, [navigate, selectedOptions, stepStatuses, scenarios, progressData]);
+
   // Render sidebar content
   const renderSidebarContent = useCallback(
     () => (
@@ -253,6 +265,7 @@ const TestInstructions: React.FC<TestInstructionsProps> = ({
         <TestProgressSummary
           progressData={progressData}
           onExportResults={exportTestResults}
+          onViewPrintableReport={navigateToPrintableReport}
           hasScenarios={scenarios.length > 0}
         />
 

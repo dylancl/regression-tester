@@ -1,17 +1,19 @@
 import React from "react";
-import { Box, Typography, Button, useTheme } from "@mui/material";
-import { FileDownload } from "@mui/icons-material";
+import { Box, Typography, Button, useTheme, Stack } from "@mui/material";
+import { FileDownload, Print } from "@mui/icons-material";
 import { TestProgressData } from "../../hooks/useTestInstructions";
 
 interface TestProgressSummaryProps {
   progressData: TestProgressData;
   onExportResults: () => void;
+  onViewPrintableReport?: () => void;
   hasScenarios: boolean;
 }
 
 const TestProgressSummary: React.FC<TestProgressSummaryProps> = ({
   progressData,
   onExportResults,
+  onViewPrintableReport,
   hasScenarios,
 }) => {
   const theme = useTheme();
@@ -139,18 +141,32 @@ const TestProgressSummary: React.FC<TestProgressSummaryProps> = ({
         </Box>
       </Box>
 
-      {/* Export button */}
+      {/* Action buttons */}
       {hasScenarios && (
-        <Button
-          variant="outlined"
-          fullWidth
-          size="small"
-          startIcon={<FileDownload />}
-          onClick={onExportResults}
-          sx={{ mt: 2 }}
-        >
-          Export Results to CSV
-        </Button>
+        <Stack spacing={1} sx={{ mt: 2 }}>
+          <Button
+            variant="outlined"
+            fullWidth
+            size="small"
+            startIcon={<FileDownload />}
+            onClick={onExportResults}
+          >
+            Export Results to CSV
+          </Button>
+
+          {onViewPrintableReport && (
+            <Button
+              variant="outlined"
+              fullWidth
+              size="small"
+              color="primary"
+              startIcon={<Print />}
+              onClick={onViewPrintableReport}
+            >
+              View Printable Report
+            </Button>
+          )}
+        </Stack>
       )}
     </Box>
   );

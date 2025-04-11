@@ -77,7 +77,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         overflow: "hidden",
       }}
     >
-      <StyledAppBar position="static">
+      <StyledAppBar position="static" id="app-bar">
         <Toolbar sx={{ flexWrap: "wrap" }}>
           <Typography
             variant={isMobile ? "subtitle1" : "h6"}

@@ -331,6 +331,17 @@ export const useTestInstructions = ({
     }
   }, [progressData, onProgressUpdate]);
 
+  // Function to open printable test report
+  const openPrintableReport = useCallback(() => {
+    // This function will be implemented in components that use this hook
+    // It will navigate to the PrintableReportPage with the current state
+    setNotification("Opening printable test report...");
+    return {
+      selectedOptions,
+      stepStatuses,
+    };
+  }, [selectedOptions, stepStatuses]);
+
   return {
     expandedScenario,
     stepStatuses,
@@ -348,6 +359,7 @@ export const useTestInstructions = ({
     markAllSteps,
     resetScenario,
     exportTestResults,
+    openPrintableReport,
     getScenarioProgress,
     fetchScenarios,
     setNotification,

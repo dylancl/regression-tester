@@ -1,12 +1,15 @@
-// filepath: /Users/dylan.cathelijn/regressiontester/toyota-regression-tester/src/contexts/ThemeContext.tsx
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { ThemeMode, ThemeContextType } from '../types';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  ReactNode,
+} from "react";
+import { ThemeMode, ThemeContextType } from "../types";
 
-// Create a context for theme management
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Storage key for persisting theme preference
-const THEME_STORAGE_KEY = 'toyota-regression-tester-theme-mode';
+const THEME_STORAGE_KEY = "toyota-regression-tester-theme-mode";
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -15,18 +18,23 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // Initialize with stored preference or system preference if available
   const getInitialMode = (): ThemeMode => {
-    const storedMode = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-    
-    if (storedMode && (storedMode === 'light' || storedMode === 'dark')) {
+    const storedMode = localStorage.getItem(
+      THEME_STORAGE_KEY
+    ) as ThemeMode | null;
+
+    if (storedMode && (storedMode === "light" || storedMode === "dark")) {
       return storedMode;
     }
-    
+
     // Check for system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      return "dark";
     }
-    
-    return 'light';
+
+    return "light";
   };
 
   const [mode, setMode] = useState<ThemeMode>(getInitialMode);
@@ -38,7 +46,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   // Toggle between light and dark modes
   const toggleTheme = () => {
-    setMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
+    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
   };
 
   return (
@@ -51,10 +59,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 // Custom hook to use the theme context
 export const useThemeContext = (): ThemeContextType => {
   const context = useContext(ThemeContext);
-  
+
   if (!context) {
-    throw new Error('useThemeContext must be used within a ThemeProvider');
+    throw new Error("useThemeContext must be used within a ThemeProvider");
   }
-  
+
   return context;
 };

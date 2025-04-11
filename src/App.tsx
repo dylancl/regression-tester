@@ -7,7 +7,9 @@ import MultiboxTester from "./components/MultiboxTester";
 import EnvironmentsOverview from "./components/EnvironmentsOverview";
 import CountriesOverview from "./components/CountriesOverview";
 import TestCaseManagement from "./components/TestCaseManagement";
+import PrintableReportPage from "./components/test-instructions/PrintableReportPage";
 import { ThemeProvider, useThemeContext } from "./contexts/ThemeContext";
+import PrintableTestReport from "./components/test-instructions/PrintableTestReport";
 
 function App() {
   return (
@@ -36,6 +38,7 @@ const ThemedApp = () => {
             <Route path="/environments" element={<EnvironmentsOverview />} />
             <Route path="/countries" element={<CountriesOverview />} />
             <Route path="/test-management" element={<TestCaseManagement />} />
+            <Route path="/printable-report" element={<PrintableReportPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </MainLayout>
