@@ -10,13 +10,7 @@ import {
   ButtonGroup,
   useTheme,
 } from "@mui/material";
-import {
-  ExpandMore,
-  Clear,
-  CheckCircleOutline,
-  ErrorOutline,
-  Block,
-} from "@mui/icons-material";
+import { ExpandMore, Clear, CheckCircleOutline } from "@mui/icons-material";
 import {
   TestScenario,
   TestStep,
@@ -235,15 +229,7 @@ const ScenarioAccordion: React.FC<ScenarioAccordionProps> = ({
             <Button
               onClick={(e) => {
                 e.stopPropagation();
-                // Use the optimized batch operation
-                if (onMarkAllSteps) {
-                  onMarkAllSteps(scenario.id, scenario.steps, "pass");
-                } else {
-                  // Fallback to individual updates if the batch method isn't available
-                  scenario.steps.forEach((step) => {
-                    onSetStatus(scenario.id, step.id, "pass");
-                  });
-                }
+                onMarkAllSteps?.(scenario.id, scenario.steps, "pass");
               }}
               color="success"
               startIcon={<CheckCircleOutline fontSize="small" />}
@@ -256,52 +242,6 @@ const ScenarioAccordion: React.FC<ScenarioAccordionProps> = ({
               }}
             >
               Mark all passed
-            </Button>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onMarkAllSteps) {
-                  onMarkAllSteps(scenario.id, scenario.steps, "fail");
-                } else {
-                  scenario.steps.forEach((step) => {
-                    onSetStatus(scenario.id, step.id, "fail");
-                  });
-                }
-              }}
-              color="error"
-              startIcon={<ErrorOutline fontSize="small" />}
-              sx={{
-                fontSize: "0.75rem",
-                textTransform: "none",
-                px: 1.5,
-                py: 0.5,
-                minHeight: 0,
-              }}
-            >
-              Mark all failed
-            </Button>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onMarkAllSteps) {
-                  onMarkAllSteps(scenario.id, scenario.steps, "blocked");
-                } else {
-                  scenario.steps.forEach((step) => {
-                    onSetStatus(scenario.id, step.id, "blocked");
-                  });
-                }
-              }}
-              color="warning"
-              startIcon={<Block fontSize="small" />}
-              sx={{
-                fontSize: "0.75rem",
-                textTransform: "none",
-                px: 1.5,
-                py: 0.5,
-                minHeight: 0,
-              }}
-            >
-              Mark all blocked
             </Button>
           </ButtonGroup>
         </Box>
