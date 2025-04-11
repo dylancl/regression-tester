@@ -3,9 +3,7 @@ import { Menu as MenuIcon } from "@mui/icons-material";
 import { useState, useCallback } from "react";
 import { useRegressionTester } from "../hooks/useRegressionTester";
 import { countryLanguageCodes } from "../utils";
-import TestInstructions, {
-  TestProgressData,
-} from "./test-instructions/TestInstructions";
+import TestInstructions from "./test-instructions/TestInstructions";
 import { useThemeContext } from "../contexts/ThemeContext";
 import NotificationSnackbar from "./common/NotificationSnackbar";
 import ConfigDrawer from "./common/ConfigDrawer";
@@ -14,6 +12,7 @@ import FrameToolbar from "./common/FrameToolbar";
 import ResponsiveFrameContainer from "./common/ResponsiveFrameContainer";
 import FrameTitle from "./controls/FrameTitle";
 import { DeviceSizeMenu } from "./controls/DeviceSizeMenu";
+import { TestProgressData } from "../hooks/useTestInstructions";
 
 const RegressionTester = () => {
   const theme = useTheme();
