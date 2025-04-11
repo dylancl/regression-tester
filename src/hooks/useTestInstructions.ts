@@ -6,6 +6,7 @@ import {
   getTestScenarios,
   TestStepStatus,
 } from "../data/testScenarios";
+import Papa from "papaparse";
 
 // Define the interface for test progress data
 export interface TestProgressData {
@@ -257,9 +258,21 @@ export const useTestInstructions = ({
       selectedOptions.brand || "unknown"
     }-${selectedOptions.uscContext || "unknown"}-${timestamp}.csv`;
 
-    // CSV header
-    let csvContent =
-      "Component,Brand,Context,Scenario,StepID,Instruction,Expected Result,Status,Notes\n";
+    // Prepare data for CSV export
+    const csvData = [];
+
+    // Add header row
+    csvData.push([
+      "Component",
+      "Brand",
+      "Context",
+      "Scenario",
+      "StepID",
+      "Instruction",
+      "Expected Result",
+      "Status",
+      "Notes",
+    ]);
 
     // Add each test step as a row in the CSV
     scenarios.forEach((scenario) => {
@@ -267,24 +280,28 @@ export const useTestInstructions = ({
         const stepKey = `${scenario.id}-${step.id}`;
         const status = stepStatuses[stepKey] || "not-tested";
 
-        // Escape any commas in the text to prevent CSV misalignment
-        const escapeCsvField = (field: string) =>
-          `"${field.replace(/"/g, '""')}"`;
-
-        const row = [
-          escapeCsvField(selectedOptions.component || "unknown"),
-          escapeCsvField(selectedOptions.brand || "unknown"),
-          escapeCsvField(selectedOptions.uscContext || "unknown"),
-          escapeCsvField(scenario.title),
-          escapeCsvField(step.id),
-          escapeCsvField(step.instruction),
-          escapeCsvField(step.expectedResult),
-          escapeCsvField(status),
-          '""', // Empty notes field that can be filled manually later
-        ].join(",");
-
-        csvContent += row + "\n";
+        csvData.push([
+          selectedOptions.component || "unknown",
+          selectedOptions.brand || "unknown",
+          selectedOptions.uscContext || "unknown",
+          scenario.title,
+          step.id,
+          step.instruction,
+          step.expectedResult,
+          status,
+          "", // Empty notes field that can be filled manually later
+        ]);
       });
+    });
+
+    // Use PapaParser to convert to CSV
+    const csvContent = Papa.unparse(csvData, {
+      quotes: true, // Use quotes around all fields
+      quoteChar: '"',
+      escapeChar: '"',
+      delimiter: ",",
+      header: false, // We're manually adding the header row
+      newline: "\n",
     });
 
     // Create a Blob with the CSV content
