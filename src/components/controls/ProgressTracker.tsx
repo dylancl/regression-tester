@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, useTheme, Tooltip } from "@mui/material";
-import { TestProgressData } from "../test-instructions/TestInstructions";
+import { TestProgressData } from "../../hooks/useTestInstructions";
 
 interface ProgressTrackerProps {
   progressData: TestProgressData;

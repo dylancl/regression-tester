@@ -3,24 +3,15 @@ import {
   doc,
   getDocs,
   getDoc,
-  setDoc,
   addDoc,
   deleteDoc,
   query,
-  where,
   orderBy,
   updateDoc,
   writeBatch,
 } from "firebase/firestore";
 import { db } from "./config";
-import {
-  TestStepStatus,
-  TestScenario,
-  TestScenarioMap,
-  TestStep,
-} from "../data/testScenarios";
-import { SelectedOptions } from "../types";
-import { getComponentKey } from "../data/testScenarios";
+import { TestScenarioMap, TestStep } from "../data/testScenarios";
 
 // Collection references
 const componentsCollection = collection(db, "components");

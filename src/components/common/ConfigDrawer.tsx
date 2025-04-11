@@ -19,7 +19,7 @@ import { SelectedOptions } from "../../types";
 import CountrySelector from "../controls/CountrySelector";
 import ControlPanel from "../controls/ControlPanel";
 import ProgressTracker from "../controls/ProgressTracker";
-import { TestProgressData } from "../test-instructions/TestInstructions";
+import { TestProgressData } from "../../hooks/useTestInstructions";
 
 interface ConfigDrawerProps {
   /**
@@ -180,13 +180,10 @@ const ConfigDrawer: React.FC<ConfigDrawerProps> = ({
           gap: 2,
         }}
       >
-        {/* URL display section - optional */}
         {urlDisplayComponent}
 
-        {/* Frame info - optional */}
         {frameInfoComponent}
 
-        {/* Country Selector first for better user flow */}
         <CountrySelector
           countryLanguageCode={countryLanguageCode}
           goToNextCountry={onNextCountry}
@@ -194,7 +191,6 @@ const ConfigDrawer: React.FC<ConfigDrawerProps> = ({
           changeCountry={onChangeCountry}
         />
 
-        {/* Control Panel for settings */}
         <ControlPanel
           selectedOptions={selectedOptions}
           handleOptionChange={onOptionChange}
@@ -202,7 +198,6 @@ const ConfigDrawer: React.FC<ConfigDrawerProps> = ({
         />
       </Box>
 
-      {/* Progress Tracker at bottom of sidebar */}
       {progressData && progressData.total > 0 && (
         <ProgressTracker progressData={progressData} />
       )}
