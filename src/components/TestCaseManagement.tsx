@@ -10,8 +10,8 @@ import {
   Alert,
 } from "@mui/material";
 import ComponentManager from "./test-management/components/ComponentManager";
-import ScenarioManager from "./test-management/ScenarioManager";
-import TestStepManager from "./test-management/TestStepManager";
+import ScenarioManager from "./test-management/scenarios/ScenarioManager";
+import TestStepManager from "./test-management/test-steps/TestStepManager";
 import useTestCaseManagement from "../hooks/useTestCaseManagement";
 
 interface TabPanelProps {
