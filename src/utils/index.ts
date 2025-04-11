@@ -1,4 +1,5 @@
-import { CountryLanguageCodes, SelectedOptions } from "../types";
+import { ComponentDocument } from "../firebase/firestore";
+import { Component, CountryLanguageCodes, SelectedOptions } from "../types";
 
 // Country language code map, organized by NMSC (National Marketing and Sales Company)
 export const countryLanguageCodes: CountryLanguageCodes = {
@@ -155,6 +156,35 @@ export const countryLanguageCodes: CountryLanguageCodes = {
     hasLexus: false,
     hasStock: false,
     hasUsed: true,
+  },
+};
+
+export const componentMap: Record<
+  Component,
+  {
+    title: string;
+    description: string;
+  }
+> = {
+  "car-filter": {
+    title: "Car Filter",
+    description: "Full Car Filter component",
+  },
+  "car-filter-results": {
+    title: "Car Filter Results",
+    description: "Results component for the car filter",
+  },
+  "car-filter-header": {
+    title: "Car Filter Header",
+    description: "Top filter header component",
+  },
+  "used-stock-cars": {
+    title: "Used Stock Cars",
+    description: "PDP component",
+  },
+  "used-stock-cars-pdf": {
+    title: "Used Stock Cars PDF",
+    description: "PDF version of the PDP",
   },
 };
 
@@ -358,4 +388,29 @@ export const getPrettyString = (
   }
 
   return result.filter((item) => Boolean(item.text)) as PrettyStringType[];
+};
+/**
+ * Filter components based on search term, brand and context
+ */
+
+export const filterComponents = (
+  components: ComponentDocument[],
+  searchTerm: string,
+  filterBrand: string,
+  filterContext: string
+): ComponentDocument[] => {
+  return components.filter((component) => {
+    const matchesSearch =
+      !searchTerm ||
+      component.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      component.component.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      component.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesBrand =
+      filterBrand === "all" || component.brand === filterBrand;
+    const matchesContext =
+      filterContext === "all" || component.context === filterContext;
+
+    return matchesSearch && matchesBrand && matchesContext;
+  });
 };

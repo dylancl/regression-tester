@@ -52,7 +52,6 @@ import {
   TestScenario,
   TestStep,
   getTestScenarios,
-  TEST_SCENARIOS_SPREADSHEET_ID,
   TestStepStatus,
 } from "../../data/testScenarios";
 
@@ -156,7 +155,7 @@ const TestInstructions: React.FC<TestInstructionsProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Google Sheets URLs
-  const sheetsEditUrl = `https://docs.google.com/spreadsheets/d/${TEST_SCENARIOS_SPREADSHEET_ID}/edit`;
+  const sheetsEditUrl = `https://docs.google.com/spreadsheets/d/aaa/edit`;
   const componentsSheetUrl = `${sheetsEditUrl}#gid=0`;
   const stepsSheetUrl = `${sheetsEditUrl}#gid=1`;
 

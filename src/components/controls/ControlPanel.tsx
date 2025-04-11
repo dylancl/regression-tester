@@ -11,10 +11,11 @@ import {
   SelectChangeEvent,
   Stack,
   useTheme,
+  Box,
 } from "@mui/material";
 import { TuneOutlined } from "@mui/icons-material";
 import { SelectedOptions } from "../../types";
-import { countryLanguageCodes } from "../../utils";
+import { componentMap, countryLanguageCodes } from "../../utils";
 
 interface ControlPanelProps {
   selectedOptions: SelectedOptions;
@@ -101,9 +102,24 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             onChange={handleChange}
             sx={{ bgcolor: "background.paper" }}
           >
-            <MenuItem value="car-filter">Car Filter</MenuItem>
-            <MenuItem value="used-stock-cars">Used/Stock Cars</MenuItem>
-            <MenuItem value="used-stock-cars-pdf">Used/Stock Cars PDF</MenuItem>
+            {Object.entries(componentMap).map(
+              ([key, { title, description }]) => (
+                <MenuItem
+                  key={key}
+                  value={key}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  {title}
+                  <Box sx={{ fontSize: "0.8em", color: "text.secondary" }}>
+                    {description}
+                  </Box>
+                </MenuItem>
+              )
+            )}
           </Select>
           <FormHelperText>Select the component to test</FormHelperText>
         </FormControl>
