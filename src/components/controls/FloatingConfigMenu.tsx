@@ -455,6 +455,48 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                 </FormControl>
               </Stack>
             </Box>
+            <Divider />
+
+            {/* Retailer Screen Section */}
+            <Box
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === "dark"
+                    ? "rgba(0, 0, 0, 0.4)"
+                    : "rgba(255, 255, 255, 0.9)",
+                p: 1.5,
+                borderRadius: 1,
+                boxShadow: theme.shadows[1],
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                color="primary"
+                gutterBottom
+                fontWeight="medium"
+              >
+                Retailer Screen
+              </Typography>
+              <FormControl fullWidth size="small">
+                <InputLabel id="retailerscreen-label">
+                  Retailer Screen
+                </InputLabel>
+                <Select
+                  labelId="retailerscreen-label"
+                  id="retailerscreen"
+                  name="retailerscreen"
+                  value={frame.selectedOptions.retailerscreen || "false"}
+                  label="Retailer Screen"
+                  onChange={handleChange}
+                >
+                  <MenuItem value="true">Enabled</MenuItem>
+                  <MenuItem value="false">Disabled</MenuItem>
+                </Select>
+                <FormHelperText>
+                  Enable or disable retailer screen mode
+                </FormHelperText>
+              </FormControl>
+            </Box>
           </Stack>
         </Box>
       </Popover>

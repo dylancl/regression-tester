@@ -1,19 +1,21 @@
-import { SelectedOptions } from '../types';
-import { countryLanguageCodes } from './index';
+import { SelectedOptions } from "../types";
+import { countryLanguageCodes } from "./index";
 
 // Storage keys
-const SINGLE_VIEW_CONFIG_KEY = 'toyota-regression-tester-single-view-config';
-const MULTIBOX_VIEW_CONFIG_KEY = 'toyota-regression-tester-multibox-view-config';
+const SINGLE_VIEW_CONFIG_KEY = "toyota-regression-tester-single-view-config";
+const MULTIBOX_VIEW_CONFIG_KEY =
+  "toyota-regression-tester-multibox-view-config";
 
 // Default configuration
 export const defaultOptions: SelectedOptions = {
-  environment: 'prev',
-  component: 'car-filter',
-  uscContext: 'used',
-  uscEnv: 'uat',
-  brand: 'toyota',
-  variantBrand: 'toyota',
-  device: 'desktop', // Default to desktop view
+  environment: "prev",
+  component: "car-filter",
+  uscContext: "used",
+  uscEnv: "uat",
+  brand: "toyota",
+  variantBrand: "toyota",
+  device: "desktop", // Default to desktop view
+  retailerscreen: "false", // Default to no retailer screen mode
 };
 
 // Type for saved configuration
@@ -27,7 +29,7 @@ export const saveSingleViewConfig = (config: SavedConfig): void => {
   try {
     localStorage.setItem(SINGLE_VIEW_CONFIG_KEY, JSON.stringify(config));
   } catch (error) {
-    console.error('Failed to save Single View configuration', error);
+    console.error("Failed to save Single View configuration", error);
   }
 };
 
@@ -39,13 +41,13 @@ export const loadSingleViewConfig = (): SavedConfig | null => {
       return JSON.parse(savedConfig);
     }
   } catch (error) {
-    console.error('Failed to load Single View configuration', error);
+    console.error("Failed to load Single View configuration", error);
   }
-  
+
   // Return default config if nothing is saved
   return {
     selectedOptions: { ...defaultOptions },
-    countryLanguageCode: Object.keys(countryLanguageCodes)[0]
+    countryLanguageCode: Object.keys(countryLanguageCodes)[0],
   };
 };
 
@@ -54,7 +56,7 @@ export const saveMultiboxFirstFrameConfig = (config: SavedConfig): void => {
   try {
     localStorage.setItem(MULTIBOX_VIEW_CONFIG_KEY, JSON.stringify(config));
   } catch (error) {
-    console.error('Failed to save Multibox configuration', error);
+    console.error("Failed to save Multibox configuration", error);
   }
 };
 
@@ -66,8 +68,8 @@ export const loadMultiboxFirstFrameConfig = (): SavedConfig | null => {
       return JSON.parse(savedConfig);
     }
   } catch (error) {
-    console.error('Failed to load Multibox configuration', error);
+    console.error("Failed to load Multibox configuration", error);
   }
-  
+
   return null; // Return null so we can explicitly handle fallback logic where this is called
 };

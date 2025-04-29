@@ -216,6 +216,28 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <FormHelperText>Variant brand for the component</FormHelperText>
           </FormControl>
         </Stack>
+
+        {/* Retailer Screen Toggle */}
+        <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="retailerscreen-label">Retailer Screen</InputLabel>
+            <Select
+              labelId="retailerscreen-label"
+              id="retailerscreen"
+              name="retailerscreen"
+              value={selectedOptions.retailerscreen || "false"}
+              label="Retailer Screen"
+              onChange={handleChange}
+              sx={{ bgcolor: "background.paper" }}
+            >
+              <MenuItem value="true">Enabled</MenuItem>
+              <MenuItem value="false">Disabled</MenuItem>
+            </Select>
+            <FormHelperText>
+              Enable or disable retailer screen mode
+            </FormHelperText>
+          </FormControl>
+        </Stack>
       </Stack>
     </Paper>
   );

@@ -18,6 +18,7 @@ export type SelectedOptions = Partial<{
   brand: string;
   variantBrand: string;
   device: string; // New property for device type (mobile/desktop)
+  retailerscreen: string; // Property for retailer screen mode (true/false)
   [key: string]: string;
 }>;
 
