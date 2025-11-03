@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   FormControl,
   InputLabel,
@@ -12,10 +12,11 @@ import {
   Stack,
   useTheme,
   Box,
-} from "@mui/material";
-import { TuneOutlined } from "@mui/icons-material";
-import { SelectedOptions } from "../../types";
-import { componentMap, countryLanguageCodes } from "../../utils";
+  TextField,
+} from '@mui/material';
+import { TuneOutlined } from '@mui/icons-material';
+import { SelectedOptions } from '../../types';
+import { componentMap, countryLanguageCodes } from '../../utils';
 
 interface ControlPanelProps {
   selectedOptions: SelectedOptions;
@@ -47,11 +48,11 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
       elevation={1}
       sx={{
         p: 2,
-        backgroundColor: "background.paper",
+        backgroundColor: 'background.paper',
         borderRadius: 2,
         transition: theme.transitions.create([
-          "background-color",
-          "box-shadow",
+          'background-color',
+          'box-shadow',
         ]),
       }}
     >
@@ -79,7 +80,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={selectedOptions.environment}
             label="Environment"
             onChange={handleChange}
-            sx={{ bgcolor: "background.paper" }}
+            sx={{ bgcolor: 'background.paper' }}
           >
             <MenuItem value="localhost">Localhost</MenuItem>
             <MenuItem value="dev">Development</MenuItem>
@@ -100,7 +101,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={selectedOptions.component}
             label="Component"
             onChange={handleChange}
-            sx={{ bgcolor: "background.paper" }}
+            sx={{ bgcolor: 'background.paper' }}
           >
             {Object.entries(componentMap).map(
               ([key, { title, description }]) => (
@@ -108,13 +109,13 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                   key={key}
                   value={key}
                   sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
                   }}
                 >
                   {title}
-                  <Box sx={{ fontSize: "0.8em", color: "text.secondary" }}>
+                  <Box sx={{ fontSize: '0.8em', color: 'text.secondary' }}>
                     {description}
                   </Box>
                 </MenuItem>
@@ -124,7 +125,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <FormHelperText>Select the component to test</FormHelperText>
         </FormControl>
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           {/* USC Context */}
           <FormControl fullWidth size="small">
             <InputLabel id="usc-context-label">USC Context</InputLabel>
@@ -135,22 +136,22 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.uscContext}
               label="USC Context"
               onChange={handleChange}
-              disabled={selectedOptions.component === "used-stock-cars-pdf"}
-              sx={{ bgcolor: "background.paper" }}
+              disabled={selectedOptions.component === 'used-stock-cars-pdf'}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="used" disabled={!hasUsed}>
-                Used {!hasUsed && "(Not Available)"}
+                Used {!hasUsed && '(Not Available)'}
               </MenuItem>
               <MenuItem value="stock" disabled={!hasStock}>
-                Stock {!hasStock && "(Not Available)"}
+                Stock {!hasStock && '(Not Available)'}
               </MenuItem>
             </Select>
             <FormHelperText>
-              {!hasStock && selectedOptions.uscContext === "used"
-                ? "Stock is not available for this country"
-                : !hasUsed && selectedOptions.uscContext === "stock"
-                ? "Used is not available for this country"
-                : "Used or Stock cars"}
+              {!hasStock && selectedOptions.uscContext === 'used'
+                ? 'Stock is not available for this country'
+                : !hasUsed && selectedOptions.uscContext === 'stock'
+                ? 'Used is not available for this country'
+                : 'Used or Stock cars'}
             </FormHelperText>
           </FormControl>
 
@@ -164,7 +165,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.uscEnv}
               label="USC Environment"
               onChange={handleChange}
-              sx={{ bgcolor: "background.paper" }}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="uat">UAT</MenuItem>
               <MenuItem value="production">Production</MenuItem>
@@ -173,7 +174,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           </FormControl>
         </Stack>
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           {/* Brand Selection */}
           <FormControl fullWidth size="small">
             <InputLabel id="brand-label">Brand</InputLabel>
@@ -184,17 +185,17 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.brand}
               label="Brand"
               onChange={handleChange}
-              sx={{ bgcolor: "background.paper" }}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="toyota">Toyota</MenuItem>
               <MenuItem value="lexus" disabled={!hasLexus}>
-                Lexus {!hasLexus && "(Not Available)"}
+                Lexus {!hasLexus && '(Not Available)'}
               </MenuItem>
             </Select>
             <FormHelperText>
-              {!hasLexus && selectedOptions.brand === "toyota"
-                ? "Lexus is not available for this country"
-                : "Brand selection"}
+              {!hasLexus && selectedOptions.brand === 'toyota'
+                ? 'Lexus is not available for this country'
+                : 'Brand selection'}
             </FormHelperText>
           </FormControl>
 
@@ -208,7 +209,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               value={selectedOptions.variantBrand}
               label="Variant Brand"
               onChange={handleChange}
-              sx={{ bgcolor: "background.paper" }}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="toyota">Toyota</MenuItem>
               <MenuItem value="lexus">Lexus</MenuItem>
@@ -225,10 +226,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
               labelId="retailerscreen-label"
               id="retailerscreen"
               name="retailerscreen"
-              value={selectedOptions.retailerscreen || "false"}
+              value={selectedOptions.retailerscreen || 'false'}
               label="Retailer Screen"
               onChange={handleChange}
-              sx={{ bgcolor: "background.paper" }}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="true">Enabled</MenuItem>
               <MenuItem value="false">Disabled</MenuItem>
@@ -238,6 +239,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             </FormHelperText>
           </FormControl>
         </Stack>
+
+        {/* Toyota Code Input */}
+        <TextField
+          fullWidth
+          size="small"
+          label="tyCode"
+          name="tyCode"
+          value={selectedOptions.tyCode || ''}
+          onChange={(event) => handleOptionChange('tyCode', event.target.value)}
+          placeholder="Enter Toyota code"
+          helperText="Optional Toyota Code"
+          sx={{ bgcolor: 'background.paper' }}
+        />
       </Stack>
     </Paper>
   );

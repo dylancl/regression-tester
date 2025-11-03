@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Fab,
@@ -15,10 +15,11 @@ import {
   InputLabel,
   SelectChangeEvent,
   FormHelperText,
-} from "@mui/material";
-import { Settings, Close } from "@mui/icons-material";
-import { SelectedOptions } from "../../types";
-import { componentMap, countryLanguageCodes } from "../../utils";
+  TextField,
+} from '@mui/material';
+import { Settings, Close } from '@mui/icons-material';
+import { SelectedOptions } from '../../types';
+import { componentMap, countryLanguageCodes } from '../../utils';
 
 interface FloatingConfigMenuProps {
   frame: {
@@ -73,26 +74,26 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
         aria-label="configuration options"
         onClick={handleClick}
         sx={{
-          position: "absolute",
+          position: 'absolute',
           bottom: 16,
           right: 16,
           bgcolor: open
             ? theme.palette.primary.main
-            : theme.palette.mode === "dark"
-            ? "rgba(0, 0, 0, 0.4)"
-            : "rgba(255, 255, 255, 0.4)",
+            : theme.palette.mode === 'dark'
+            ? 'rgba(0, 0, 0, 0.4)'
+            : 'rgba(255, 255, 255, 0.4)',
           color: open
-            ? "#fff"
-            : theme.palette.mode === "dark"
-            ? "rgba(255, 255, 255, 0.7)"
-            : "rgba(0, 0, 0, 0.7)",
-          "&:hover": {
+            ? '#fff'
+            : theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, 0.7)'
+            : 'rgba(0, 0, 0, 0.7)',
+          '&:hover': {
             bgcolor: theme.palette.primary.main,
-            color: "#fff",
+            color: '#fff',
           },
-          transition: "background-color 0.3s, color 0.3s, opacity 0.3s",
-          boxShadow: open ? theme.shadows[8] : "none",
-          backdropFilter: "blur(4px)",
+          transition: 'background-color 0.3s, color 0.3s, opacity 0.3s',
+          boxShadow: open ? theme.shadows[8] : 'none',
+          backdropFilter: 'blur(4px)',
           opacity: open ? 1 : 0.7,
           zIndex: 100,
         }}
@@ -105,12 +106,12 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "top",
-          horizontal: "right",
+          vertical: 'top',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         slots={{ transition: Fade }}
         slotProps={{
@@ -123,24 +124,24 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               borderRadius: 2,
               bgcolor: theme.palette.background.paper,
               maxWidth: 380,
-              width: "100%",
-              overflow: "hidden",
-              backdropFilter: "blur(8px)",
+              width: '100%',
+              overflow: 'hidden',
+              backdropFilter: 'blur(8px)',
             },
           },
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             p: 2,
             borderBottom: `1px solid ${theme.palette.divider}`,
             bgcolor:
-              theme.palette.mode === "dark"
-                ? "rgba(66, 66, 66, 0.2)"
-                : "rgba(248, 248, 248, 0.8)",
+              theme.palette.mode === 'dark'
+                ? 'rgba(66, 66, 66, 0.2)'
+                : 'rgba(248, 248, 248, 0.8)',
           }}
         >
           <Typography variant="subtitle1" fontWeight="medium" color="primary">
@@ -154,18 +155,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
         <Box
           sx={{
             p: 2,
-            maxHeight: "40rem",
-            overflowY: "auto",
-            scrollbarWidth: "thin",
-            "&::-webkit-scrollbar": {
-              width: "6px",
+            maxHeight: '40rem',
+            overflowY: 'auto',
+            scrollbarWidth: 'thin',
+            '&::-webkit-scrollbar': {
+              width: '6px',
             },
-            "&::-webkit-scrollbar-track": {
+            '&::-webkit-scrollbar-track': {
               background: theme.palette.background.default,
             },
-            "&::-webkit-scrollbar-thumb": {
+            '&::-webkit-scrollbar-thumb': {
               backgroundColor: theme.palette.divider,
-              borderRadius: "4px",
+              borderRadius: '4px',
             },
           }}
         >
@@ -174,9 +175,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -225,9 +226,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -250,7 +251,7 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                     labelId="environment-label"
                     id="environment"
                     name="environment"
-                    value={frame.selectedOptions.environment || "prev"}
+                    value={frame.selectedOptions.environment || 'prev'}
                     label="Deployment Environment"
                     onChange={handleChange}
                   >
@@ -271,7 +272,7 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                     labelId="usc-env-label"
                     id="uscEnv"
                     name="uscEnv"
-                    value={frame.selectedOptions.uscEnv || "uat"}
+                    value={frame.selectedOptions.uscEnv || 'uat'}
                     label="USC Environment"
                     onChange={handleChange}
                   >
@@ -288,9 +289,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -310,7 +311,7 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                   labelId="component-label"
                   id="component"
                   name="component"
-                  value={frame.selectedOptions.component || "car-filter"}
+                  value={frame.selectedOptions.component || 'car-filter'}
                   label="Component"
                   onChange={handleChange}
                 >
@@ -320,14 +321,14 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                         key={key}
                         value={key}
                         sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "flex-start",
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
                         }}
                       >
                         {title}
                         <Box
-                          sx={{ fontSize: "0.8em", color: "text.secondary" }}
+                          sx={{ fontSize: '0.8em', color: 'text.secondary' }}
                         >
                           {description}
                         </Box>
@@ -344,9 +345,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -366,26 +367,26 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                   labelId="usc-context-label"
                   id="uscContext"
                   name="uscContext"
-                  value={frame.selectedOptions.uscContext || "used"}
+                  value={frame.selectedOptions.uscContext || 'used'}
                   label="USC Context"
                   onChange={handleChange}
                   disabled={
-                    frame.selectedOptions.component === "used-stock-cars-pdf"
+                    frame.selectedOptions.component === 'used-stock-cars-pdf'
                   }
                 >
                   <MenuItem value="used" disabled={!hasUsed}>
-                    Used {!hasUsed && "(Not Available)"}
+                    Used {!hasUsed && '(Not Available)'}
                   </MenuItem>
                   <MenuItem value="stock" disabled={!hasStock}>
-                    Stock {!hasStock && "(Not Available)"}
+                    Stock {!hasStock && '(Not Available)'}
                   </MenuItem>
                 </Select>
                 <FormHelperText>
-                  {!hasStock && frame.selectedOptions.uscContext === "used"
-                    ? "Stock is not available for this country"
-                    : !hasUsed && frame.selectedOptions.uscContext === "stock"
-                    ? "Used is not available for this country"
-                    : "Used or Stock cars"}
+                  {!hasStock && frame.selectedOptions.uscContext === 'used'
+                    ? 'Stock is not available for this country'
+                    : !hasUsed && frame.selectedOptions.uscContext === 'stock'
+                    ? 'Used is not available for this country'
+                    : 'Used or Stock cars'}
                 </FormHelperText>
               </FormControl>
             </Box>
@@ -395,9 +396,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -418,19 +419,19 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                     labelId="brand-label"
                     id="brand"
                     name="brand"
-                    value={frame.selectedOptions.brand || "toyota"}
+                    value={frame.selectedOptions.brand || 'toyota'}
                     label="Brand"
                     onChange={handleChange}
                   >
                     <MenuItem value="toyota">Toyota</MenuItem>
                     <MenuItem value="lexus" disabled={!hasLexus}>
-                      Lexus {!hasLexus && "(Not Available)"}
+                      Lexus {!hasLexus && '(Not Available)'}
                     </MenuItem>
                   </Select>
                   <FormHelperText>
-                    {!hasLexus && frame.selectedOptions.brand === "toyota"
-                      ? "Lexus is not available for this country"
-                      : "Brand selection"}
+                    {!hasLexus && frame.selectedOptions.brand === 'toyota'
+                      ? 'Lexus is not available for this country'
+                      : 'Brand selection'}
                   </FormHelperText>
                 </FormControl>
 
@@ -442,7 +443,7 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                     labelId="variant-brand-label"
                     id="variantBrand"
                     name="variantBrand"
-                    value={frame.selectedOptions.variantBrand || "toyota"}
+                    value={frame.selectedOptions.variantBrand || 'toyota'}
                     label="Variant Brand"
                     onChange={handleChange}
                   >
@@ -461,9 +462,9 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
             <Box
               sx={{
                 backgroundColor:
-                  theme.palette.mode === "dark"
-                    ? "rgba(0, 0, 0, 0.4)"
-                    : "rgba(255, 255, 255, 0.9)",
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
                 p: 1.5,
                 borderRadius: 1,
                 boxShadow: theme.shadows[1],
@@ -485,7 +486,7 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                   labelId="retailerscreen-label"
                   id="retailerscreen"
                   name="retailerscreen"
-                  value={frame.selectedOptions.retailerscreen || "false"}
+                  value={frame.selectedOptions.retailerscreen || 'false'}
                   label="Retailer Screen"
                   onChange={handleChange}
                 >
@@ -496,6 +497,41 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
                   Enable or disable retailer screen mode
                 </FormHelperText>
               </FormControl>
+            </Box>
+            <Divider />
+
+            {/* tyCode Section */}
+            <Box
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(0, 0, 0, 0.4)'
+                    : 'rgba(255, 255, 255, 0.9)',
+                p: 1.5,
+                borderRadius: 1,
+                boxShadow: theme.shadows[1],
+              }}
+            >
+              <Typography
+                variant="subtitle2"
+                color="primary"
+                gutterBottom
+                fontWeight="medium"
+              >
+                Toyota Code
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                label="tyCode"
+                name="tyCode"
+                value={frame.selectedOptions.tyCode || ''}
+                onChange={(event) =>
+                  onOptionChange(frame.id, 'tyCode', event.target.value)
+                }
+                placeholder="Enter Toyota code"
+                helperText="Optional Toyota Code"
+              />
             </Box>
           </Stack>
         </Box>

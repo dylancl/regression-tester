@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import { SelectedOptions } from "../types";
-import { countryLanguageCodes, generateUrl } from "../utils";
+import { useState, useEffect } from 'react';
+import { SelectedOptions } from '../types';
+import { countryLanguageCodes, generateUrl } from '../utils';
 import {
   defaultOptions,
   loadSingleViewConfig,
   saveMultiboxFirstFrameConfig,
-} from "../utils/configStore";
+} from '../utils/configStore';
 
 // Main configuration interface for each frame
 export interface FrameConfig {
@@ -94,6 +94,7 @@ export const useMultiboxTester = () => {
         brand: true,
         variantBrand: true,
         retailerscreen: true,
+        tyCode: true,
         country: true,
       },
       position: {
@@ -128,6 +129,7 @@ export const useMultiboxTester = () => {
         brand: true,
         variantBrand: true,
         retailerscreen: true,
+        tyCode: true,
         country: true,
       },
       position: {
@@ -189,7 +191,7 @@ export const useMultiboxTester = () => {
 
   const removeFrame = (id: string) => {
     if (frames.length <= 1) {
-      showNotification("Cannot remove the last frame");
+      showNotification('Cannot remove the last frame');
       return;
     }
 
@@ -219,19 +221,19 @@ export const useMultiboxTester = () => {
         countryLanguageCodes[sourceFrame.countryLanguageCode]?.hasUsed !==
         false;
 
-      if (name === "brand" && value === "lexus" && !hasLexus) {
-        showNotification("Lexus is not available for this country");
-        newOptions.brand = "toyota";
+      if (name === 'brand' && value === 'lexus' && !hasLexus) {
+        showNotification('Lexus is not available for this country');
+        newOptions.brand = 'toyota';
       }
 
-      if (name === "uscContext" && value === "stock" && !hasStock) {
-        showNotification("Stock Cars is not set up for this country");
-        newOptions.uscContext = "used";
+      if (name === 'uscContext' && value === 'stock' && !hasStock) {
+        showNotification('Stock Cars is not set up for this country');
+        newOptions.uscContext = 'used';
       }
 
-      if (name === "uscContext" && value === "used" && !hasUsed) {
-        showNotification("Used Cars is not available for this country");
-        newOptions.uscContext = "stock";
+      if (name === 'uscContext' && value === 'used' && !hasUsed) {
+        showNotification('Used Cars is not available for this country');
+        newOptions.uscContext = 'stock';
       }
 
       // Update source frame with new configuration
@@ -266,22 +268,22 @@ export const useMultiboxTester = () => {
               const frameHasUsed =
                 countryLanguageCodes[frame.countryLanguageCode]?.hasUsed !==
                 false;
-              let updatedOptions = { ...frame.selectedOptions };
+              const updatedOptions = { ...frame.selectedOptions };
 
-              if (name === "brand" && value === "lexus") {
-                updatedOptions.brand = frameHasLexus ? value : "toyota";
-              } else if (name === "uscContext" && value === "stock") {
+              if (name === 'brand' && value === 'lexus') {
+                updatedOptions.brand = frameHasLexus ? value : 'toyota';
+              } else if (name === 'uscContext' && value === 'stock') {
                 updatedOptions.uscContext = frameHasStock
                   ? value
                   : frameHasUsed
-                  ? "used"
-                  : "stock";
-              } else if (name === "uscContext" && value === "used") {
+                  ? 'used'
+                  : 'stock';
+              } else if (name === 'uscContext' && value === 'used') {
                 updatedOptions.uscContext = frameHasUsed
                   ? value
                   : frameHasStock
-                  ? "stock"
-                  : "used";
+                  ? 'stock'
+                  : 'used';
               } else {
                 updatedOptions[name] = value;
               }
@@ -336,7 +338,7 @@ export const useMultiboxTester = () => {
         const shouldSyncCountry = sourceFrame.syncOptions?.country !== false;
 
         if (shouldSyncCountry) {
-          showNotification("Syncing country to other frames");
+          showNotification('Syncing country to other frames');
 
           updatedFrames.forEach((frame, index) => {
             if (index !== sourceFrameIndex) {
@@ -354,7 +356,7 @@ export const useMultiboxTester = () => {
             }
           });
         } else {
-          showNotification("Country sync is disabled in settings");
+          showNotification('Country sync is disabled in settings');
         }
       }
 
@@ -366,9 +368,9 @@ export const useMultiboxTester = () => {
   const copyUrlToClipboard = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      showNotification("URL copied to clipboard");
+      showNotification('URL copied to clipboard');
     } catch (err) {
-      showNotification("Failed to copy URL");
+      showNotification(`Failed to copy URL. ${(err as Error).message}`);
     }
   };
 
@@ -419,7 +421,7 @@ export const useMultiboxTester = () => {
     );
 
     const countryName =
-      countryLanguageCodes[frame.countryLanguageCode]?.pretty || "Frame";
+      countryLanguageCodes[frame.countryLanguageCode]?.pretty || 'Frame';
     showNotification(
       newSyncState
         ? `Frame sync enabled for ${countryName}`
@@ -431,7 +433,7 @@ export const useMultiboxTester = () => {
     const newGlobalSyncState = !globalSyncEnabled;
     setGlobalSyncEnabled(newGlobalSyncState);
     showNotification(
-      newGlobalSyncState ? "Global sync enabled" : "Global sync disabled"
+      newGlobalSyncState ? 'Global sync enabled' : 'Global sync disabled'
     );
   };
 
@@ -456,7 +458,7 @@ export const useMultiboxTester = () => {
     );
 
     showNotification(
-      `${enabled ? "Enabled" : "Disabled"} syncing ${optionName}`
+      `${enabled ? 'Enabled' : 'Disabled'} syncing ${optionName}`
     );
   };
 
@@ -467,7 +469,7 @@ export const useMultiboxTester = () => {
       // We add a timestamp to the URL to force reload
       // This is needed as the iframe might cache the URL, which would prevent it from reloading
       const timestamp = Date.now();
-      const separator = frame.generatedUrl.includes("?") ? "&" : "?";
+      const separator = frame.generatedUrl.includes('?') ? '&' : '?';
       const refreshedUrl = `${frame.generatedUrl}${separator}_t=${timestamp}`;
 
       setFrames((current) =>
@@ -478,7 +480,7 @@ export const useMultiboxTester = () => {
         )
       );
 
-      showNotification("Reloading frame...");
+      showNotification('Reloading frame...');
     }
   };
 

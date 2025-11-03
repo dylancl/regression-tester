@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -14,9 +14,9 @@ import {
   IconButton,
   useTheme,
   Box,
-} from "@mui/material";
-import { Close, Settings } from "@mui/icons-material";
-import { FrameConfig } from "../../hooks/useMultiboxTester";
+} from '@mui/material';
+import { Close, Settings } from '@mui/icons-material';
+import { FrameConfig } from '../../hooks/useMultiboxTester';
 
 type SyncOptionsMenuProps = {
   open: boolean;
@@ -37,46 +37,52 @@ type SyncOptions = {
   brand: boolean;
   variantBrand: boolean;
   retailerscreen: boolean;
+  tyCode: boolean;
   country: boolean;
   [key: string]: boolean;
 };
 
 const syncableSettings = [
   {
-    key: "environment",
-    label: "Environment",
-    description: "Deployment environment (dev, acc, prev, prod)",
+    key: 'environment',
+    label: 'Environment',
+    description: 'Deployment environment (dev, acc, prev, prod)',
   },
   {
-    key: "component",
-    label: "Component",
-    description: "Component type (car-filter, used-stock-cars, etc.)",
+    key: 'component',
+    label: 'Component',
+    description: 'Component type (car-filter, used-stock-cars, etc.)',
   },
   {
-    key: "uscContext",
-    label: "USC Context",
-    description: "Used or Stock vehicles context",
+    key: 'uscContext',
+    label: 'USC Context',
+    description: 'Used or Stock vehicles context',
   },
   {
-    key: "uscEnv",
-    label: "USC Environment",
-    description: "Backend environment (UAT, Production)",
+    key: 'uscEnv',
+    label: 'USC Environment',
+    description: 'Backend environment (UAT, Production)',
   },
-  { key: "brand", label: "Brand", description: "Main brand (Toyota, Lexus)" },
+  { key: 'brand', label: 'Brand', description: 'Main brand (Toyota, Lexus)' },
   {
-    key: "variantBrand",
-    label: "Variant Brand",
-    description: "Variant brand displayed in components",
-  },
-  {
-    key: "retailerscreen",
-    label: "Retailer Screen",
-    description: "Enable or disable retailer screen mode",
+    key: 'variantBrand',
+    label: 'Variant Brand',
+    description: 'Variant brand displayed in components',
   },
   {
-    key: "country",
-    label: "Country",
-    description: "Country and language selection",
+    key: 'retailerscreen',
+    label: 'Retailer Screen',
+    description: 'Enable or disable retailer screen mode',
+  },
+  {
+    key: 'tyCode',
+    label: 'tyCode',
+    description: 'Toyota code parameter',
+  },
+  {
+    key: 'country',
+    label: 'Country',
+    description: 'Country and language selection',
   },
 ];
 
@@ -97,6 +103,7 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
     brand: true,
     variantBrand: true,
     retailerscreen: true,
+    tyCode: true,
     country: true,
   };
 
@@ -160,18 +167,18 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
     >
       <DialogTitle
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           backgroundColor:
-            theme.palette.mode === "dark"
-              ? "rgba(66, 66, 66, 0.2)"
-              : "rgba(248, 248, 248, 0.8)",
+            theme.palette.mode === 'dark'
+              ? 'rgba(66, 66, 66, 0.2)'
+              : 'rgba(248, 248, 248, 0.8)',
           borderBottom: `1px solid ${theme.palette.divider}`,
           p: 2,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Settings color="primary" sx={{ mr: 1 }} />
           <Typography variant="h6" component="div">
             Sync Configuration Settings
@@ -200,9 +207,9 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
         sx={{
           p: 2,
           backgroundColor:
-            theme.palette.mode === "dark"
-              ? "rgba(66, 66, 66, 0.2)"
-              : "rgba(248, 248, 248, 0.8)",
+            theme.palette.mode === 'dark'
+              ? 'rgba(66, 66, 66, 0.2)'
+              : 'rgba(248, 248, 248, 0.8)',
           borderTop: `1px solid ${theme.palette.divider}`,
         }}
       >

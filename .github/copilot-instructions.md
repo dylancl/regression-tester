@@ -67,6 +67,42 @@ npm run deploy       # Deploy to GitHub Pages (includes build)
 - Use `validateOptionsForCountry()` in hooks for automatic fallback
 - NMSC codes used for backend routing (e.g., "TFR" for France)
 
+### Adding New Configuration Fields
+
+When adding a new configuration option (like `tyCode`), update these files:
+
+1. **URL Generation** (`src/utils/index.ts`):
+
+   - `buildQueryString()` automatically includes all non-empty options
+   - No changes needed unless special handling required
+
+2. **Single View Configuration** (`src/components/controls/ControlPanel.tsx`):
+
+   - Add the input field to the main configuration panel
+   - Import `TextField` from MUI if using text input
+   - Use `handleOptionChange` for state updates
+
+3. **Multibox Frame Configuration** (`src/components/controls/FloatingConfigMenu.tsx`):
+
+   - Add the input field to the frame-specific configuration menu
+   - Import `TextField` from MUI if using text input
+   - Use `onOptionChange(frame.id, name, value)` for state updates
+
+4. **Sync Options** (`src/hooks/useMultiboxTester.ts`):
+
+   - Add the new field to `syncOptions` in both `createFrameFromSavedConfig` and `createFrameConfig`
+   - Set to `true` to enable syncing by default
+
+5. **Sync Options Menu** (`src/components/controls/SyncOptionsMenu.tsx`):
+
+   - Add to `syncableSettings` array with label and description
+   - Add to `SyncOptions` type definition
+   - Add to `defaultSyncOptions` object
+
+6. **Type Definitions** (`src/types/index.ts`):
+   - `SelectedOptions` interface automatically supports new fields via `[key: string]: string`
+   - No changes needed for simple string options
+
 ### State Persistence
 
 - Single view config saved to localStorage as `toyota-regression-tester-single-view-config`
