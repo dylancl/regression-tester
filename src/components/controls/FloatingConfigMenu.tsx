@@ -13,13 +13,24 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  SelectChangeEvent,
   FormHelperText,
-  TextField,
 } from '@mui/material';
 import { Settings, Close } from '@mui/icons-material';
 import { SelectedOptions } from '../../types';
-import { componentMap, countryLanguageCodes } from '../../utils';
+import { countryLanguageCodes } from '../../utils';
+import { configurationSchema } from '../../config/configurationSchema';
+import ConfigurationPanel from '../common/ConfigurationPanel';
+
+interface FloatingConfigMenuProps {
+  frame: {
+    id: string;
+    countryLanguageCode: string;
+    selectedOptions: SelectedOptions;
+  };
+  onChangeCountry: (frameId: string, code: string) => void;
+  onOptionChange: (frameId: string, name: string, value: string) => void;
+  onShowNotification: (message: string) => void;
+}
 
 interface FloatingConfigMenuProps {
   frame: {
@@ -41,11 +52,11 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
-  // Get country-specific features
-  const countrySettings = countryLanguageCodes[frame.countryLanguageCode] || {};
-  const hasLexus = countrySettings.hasLexus || false;
-  const hasStock = countrySettings.hasStock || false;
-  const hasUsed = countrySettings.hasUsed !== false; // Default to true if not explicitly set to false
+  // Transform selectedOptions to ensure all values are strings with defaults
+  const values: Record<string, string> = {};
+  configurationSchema.forEach((field) => {
+    values[field.key] = frame.selectedOptions[field.key] || field.defaultValue;
+  });
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -53,12 +64,6 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleChange = (event: SelectChangeEvent) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    onOptionChange(frame.id, name, value);
   };
 
   const handleCountryChange = (code: string) => {
@@ -242,46 +247,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 Environment
               </Typography>
-              <Stack spacing={1.5}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="environment-label">
-                    Deployment Environment
-                  </InputLabel>
-                  <Select
-                    labelId="environment-label"
-                    id="environment"
-                    name="environment"
-                    value={frame.selectedOptions.environment || 'prev'}
-                    label="Deployment Environment"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value="localhost">Localhost</MenuItem>
-                    <MenuItem value="dev">Development</MenuItem>
-                    <MenuItem value="acc">Acceptance</MenuItem>
-                    <MenuItem value="prev">Preview</MenuItem>
-                    <MenuItem value="prod">Production</MenuItem>
-                  </Select>
-                  <FormHelperText>
-                    Select the deployment environment
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl fullWidth size="small">
-                  <InputLabel id="usc-env-label">USC Environment</InputLabel>
-                  <Select
-                    labelId="usc-env-label"
-                    id="uscEnv"
-                    name="uscEnv"
-                    value={frame.selectedOptions.uscEnv || 'uat'}
-                    label="USC Environment"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value="uat">UAT</MenuItem>
-                    <MenuItem value="production">Production</MenuItem>
-                  </Select>
-                  <FormHelperText>Backend environment</FormHelperText>
-                </FormControl>
-              </Stack>
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['environment', 'uscEnv'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
+                size="small"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
+              />
             </Box>
             <Divider />
 
@@ -305,39 +282,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 Component
               </Typography>
-              <FormControl fullWidth size="small">
-                <InputLabel id="component-label">Component</InputLabel>
-                <Select
-                  labelId="component-label"
-                  id="component"
-                  name="component"
-                  value={frame.selectedOptions.component || 'car-filter'}
-                  label="Component"
-                  onChange={handleChange}
-                >
-                  {Object.entries(componentMap).map(
-                    ([key, { title, description }]) => (
-                      <MenuItem
-                        key={key}
-                        value={key}
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                        }}
-                      >
-                        {title}
-                        <Box
-                          sx={{ fontSize: '0.8em', color: 'text.secondary' }}
-                        >
-                          {description}
-                        </Box>
-                      </MenuItem>
-                    )
-                  )}
-                </Select>
-                <FormHelperText>Select the component to test</FormHelperText>
-              </FormControl>
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['component'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
+                size="small"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
+              />
             </Box>
             <Divider />
 
@@ -361,34 +317,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 USC Context
               </Typography>
-              <FormControl fullWidth size="small">
-                <InputLabel id="usc-context-label">USC Context</InputLabel>
-                <Select
-                  labelId="usc-context-label"
-                  id="uscContext"
-                  name="uscContext"
-                  value={frame.selectedOptions.uscContext || 'used'}
-                  label="USC Context"
-                  onChange={handleChange}
-                  disabled={
-                    frame.selectedOptions.component === 'used-stock-cars-pdf'
-                  }
-                >
-                  <MenuItem value="used" disabled={!hasUsed}>
-                    Used {!hasUsed && '(Not Available)'}
-                  </MenuItem>
-                  <MenuItem value="stock" disabled={!hasStock}>
-                    Stock {!hasStock && '(Not Available)'}
-                  </MenuItem>
-                </Select>
-                <FormHelperText>
-                  {!hasStock && frame.selectedOptions.uscContext === 'used'
-                    ? 'Stock is not available for this country'
-                    : !hasUsed && frame.selectedOptions.uscContext === 'stock'
-                    ? 'Used is not available for this country'
-                    : 'Used or Stock cars'}
-                </FormHelperText>
-              </FormControl>
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['uscContext'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
+                size="small"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
+              />
             </Box>
             <Divider />
 
@@ -412,49 +352,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 Brand Settings
               </Typography>
-              <Stack spacing={1.5}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="brand-label">Brand</InputLabel>
-                  <Select
-                    labelId="brand-label"
-                    id="brand"
-                    name="brand"
-                    value={frame.selectedOptions.brand || 'toyota'}
-                    label="Brand"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value="toyota">Toyota</MenuItem>
-                    <MenuItem value="lexus" disabled={!hasLexus}>
-                      Lexus {!hasLexus && '(Not Available)'}
-                    </MenuItem>
-                  </Select>
-                  <FormHelperText>
-                    {!hasLexus && frame.selectedOptions.brand === 'toyota'
-                      ? 'Lexus is not available for this country'
-                      : 'Brand selection'}
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl fullWidth size="small">
-                  <InputLabel id="variant-brand-label">
-                    Variant Brand
-                  </InputLabel>
-                  <Select
-                    labelId="variant-brand-label"
-                    id="variantBrand"
-                    name="variantBrand"
-                    value={frame.selectedOptions.variantBrand || 'toyota'}
-                    label="Variant Brand"
-                    onChange={handleChange}
-                  >
-                    <MenuItem value="toyota">Toyota</MenuItem>
-                    <MenuItem value="lexus">Lexus</MenuItem>
-                  </Select>
-                  <FormHelperText>
-                    Variant brand for the component
-                  </FormHelperText>
-                </FormControl>
-              </Stack>
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['brand', 'variantBrand'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
+                size="small"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
+              />
             </Box>
             <Divider />
 
@@ -478,25 +387,18 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 Retailer Screen
               </Typography>
-              <FormControl fullWidth size="small">
-                <InputLabel id="retailerscreen-label">
-                  Retailer Screen
-                </InputLabel>
-                <Select
-                  labelId="retailerscreen-label"
-                  id="retailerscreen"
-                  name="retailerscreen"
-                  value={frame.selectedOptions.retailerscreen || 'false'}
-                  label="Retailer Screen"
-                  onChange={handleChange}
-                >
-                  <MenuItem value="true">Enabled</MenuItem>
-                  <MenuItem value="false">Disabled</MenuItem>
-                </Select>
-                <FormHelperText>
-                  Enable or disable retailer screen mode
-                </FormHelperText>
-              </FormControl>
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['retailerscreen'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
+                size="small"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
+              />
             </Box>
             <Divider />
 
@@ -520,17 +422,17 @@ export const FloatingConfigMenu: React.FC<FloatingConfigMenuProps> = ({
               >
                 Toyota Code
               </Typography>
-              <TextField
-                fullWidth
+              <ConfigurationPanel
+                fields={configurationSchema.filter((field) =>
+                  ['tyCode'].includes(field.key)
+                )}
+                values={values}
+                countryCode={frame.countryLanguageCode}
+                onChange={(key, value) => onOptionChange(frame.id, key, value)}
                 size="small"
-                label="tyCode"
-                name="tyCode"
-                value={frame.selectedOptions.tyCode || ''}
-                onChange={(event) =>
-                  onOptionChange(frame.id, 'tyCode', event.target.value)
-                }
-                placeholder="Enter Toyota code"
-                helperText="Optional Toyota Code"
+                showLabels={true}
+                showDescriptions={true}
+                layout="vertical"
               />
             </Box>
           </Stack>

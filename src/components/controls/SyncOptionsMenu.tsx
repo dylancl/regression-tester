@@ -17,6 +17,10 @@ import {
 } from '@mui/material';
 import { Close, Settings } from '@mui/icons-material';
 import { FrameConfig } from '../../hooks/useMultiboxTester';
+import {
+  getSyncableSettings,
+  getDefaultSyncOptions,
+} from '../../config/configurationSchema';
 
 type SyncOptionsMenuProps = {
   open: boolean;
@@ -29,62 +33,7 @@ type SyncOptionsMenuProps = {
   ) => void;
 };
 
-type SyncOptions = {
-  environment: boolean;
-  component: boolean;
-  uscContext: boolean;
-  uscEnv: boolean;
-  brand: boolean;
-  variantBrand: boolean;
-  retailerscreen: boolean;
-  tyCode: boolean;
-  country: boolean;
-  [key: string]: boolean;
-};
-
-const syncableSettings = [
-  {
-    key: 'environment',
-    label: 'Environment',
-    description: 'Deployment environment (dev, acc, prev, prod)',
-  },
-  {
-    key: 'component',
-    label: 'Component',
-    description: 'Component type (car-filter, used-stock-cars, etc.)',
-  },
-  {
-    key: 'uscContext',
-    label: 'USC Context',
-    description: 'Used or Stock vehicles context',
-  },
-  {
-    key: 'uscEnv',
-    label: 'USC Environment',
-    description: 'Backend environment (UAT, Production)',
-  },
-  { key: 'brand', label: 'Brand', description: 'Main brand (Toyota, Lexus)' },
-  {
-    key: 'variantBrand',
-    label: 'Variant Brand',
-    description: 'Variant brand displayed in components',
-  },
-  {
-    key: 'retailerscreen',
-    label: 'Retailer Screen',
-    description: 'Enable or disable retailer screen mode',
-  },
-  {
-    key: 'tyCode',
-    label: 'tyCode',
-    description: 'Toyota code parameter',
-  },
-  {
-    key: 'country',
-    label: 'Country',
-    description: 'Country and language selection',
-  },
-];
+type SyncOptions = Record<string, boolean>;
 
 export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
   open,
@@ -94,27 +43,16 @@ export const SyncOptionsMenu: React.FC<SyncOptionsMenuProps> = ({
 }) => {
   const theme = useTheme();
 
-  // Default sync options if none exist on the frame
-  const defaultSyncOptions: SyncOptions = {
-    environment: true,
-    component: true,
-    uscContext: true,
-    uscEnv: true,
-    brand: true,
-    variantBrand: true,
-    retailerscreen: true,
-    tyCode: true,
-    country: true,
-  };
-
   // Get the current sync options with defaults
-  const syncOptions = (frame.syncOptions || defaultSyncOptions) as SyncOptions;
+  const syncOptions = (frame.syncOptions ||
+    getDefaultSyncOptions()) as SyncOptions;
 
   const handleToggleChange =
     (optionName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
       onUpdateSyncOption(frame.id, optionName, event.target.checked);
     };
 
+  const syncableSettings = getSyncableSettings();
   const listItems = syncableSettings.reduce<React.ReactNode[]>(
     (acc, setting, index) => {
       acc.push(

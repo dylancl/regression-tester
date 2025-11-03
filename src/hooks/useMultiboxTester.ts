@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SelectedOptions } from '../types';
 import { countryLanguageCodes, generateUrl } from '../utils';
+import { getDefaultSyncOptions } from '../config/configurationSchema';
 import {
   defaultOptions,
   loadSingleViewConfig,
@@ -86,17 +87,7 @@ export const useMultiboxTester = () => {
       iframeLoading: true,
       customSized: false,
       syncEnabled: false,
-      syncOptions: {
-        environment: true,
-        component: true,
-        uscContext: true,
-        uscEnv: true,
-        brand: true,
-        variantBrand: true,
-        retailerscreen: true,
-        tyCode: true,
-        country: true,
-      },
+      syncOptions: getDefaultSyncOptions(),
       position: {
         x: 100 + offset * index,
         y: 100 + offset * index,
@@ -121,17 +112,7 @@ export const useMultiboxTester = () => {
       iframeLoading: true,
       customSized: false,
       syncEnabled: false,
-      syncOptions: {
-        environment: true,
-        component: true,
-        uscContext: true,
-        uscEnv: true,
-        brand: true,
-        variantBrand: true,
-        retailerscreen: true,
-        tyCode: true,
-        country: true,
-      },
+      syncOptions: getDefaultSyncOptions(),
       position: {
         x: 100 + offset * index,
         y: 100 + offset * index,
